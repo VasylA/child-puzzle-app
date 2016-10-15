@@ -1,60 +1,24 @@
-/****************************************************************************
-**
-** Copyright (C) 2015 The Qt Company Ltd.
-** Contact: http://www.qt.io/licensing/
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** You may use this file under the terms of the BSD license as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
 
 #include "mainwindow.h"
 #include "piecesmodel.h"
 #include "puzzlewidget.h"
 
 #include <QtWidgets>
+#include <QApplication>
 #include <stdlib.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-      _pieceCountBySide(1)
+      _piecesList(nullptr),
+      _puzzleWidget(nullptr),
+      _model(nullptr)
 {
-    setupMenus();
     setupWidgets();
-    model = new PiecesModel(puzzleWidget->pieceSize(), this);
-    piecesList->setModel(model);
+    _model = new PiecesModel(PIECE_COUNT_BY_SIDE, _puzzleWidget->pieceSize(), this);
+    _piecesList->setModel(_model);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    setWindowState(Qt::WindowFullScreen);
     setWindowTitle(tr("Puzzle"));
 }
 
@@ -62,12 +26,14 @@ void MainWindow::openImage(const QString &path)
 {
     QString fileName = path;
 
-    if (fileName.isNull()) {
+    if (fileName.isNull())
+    {
         fileName = QFileDialog::getOpenFileName(this,
             tr("Open Image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
     }
 
-    if (!fileName.isEmpty()) {
+    if (!fileName.isEmpty())
+    {
         QPixmap newImage;
         if (!newImage.load(fileName)) {
             QMessageBox::warning(this, tr("Open Image"),
@@ -75,7 +41,7 @@ void MainWindow::openImage(const QString &path)
                                  QMessageBox::Cancel);
             return;
         }
-        puzzleImage = newImage;
+        _puzzleImage = newImage;
         setupPuzzle();
     }
 }
@@ -92,34 +58,21 @@ void MainWindow::setCompleted()
 
 void MainWindow::setupPuzzle()
 {
-    int size = qMin(puzzleImage.width(), puzzleImage.height());
-    puzzleImage = puzzleImage.copy((puzzleImage.width() - size) / 2,
-        (puzzleImage.height() - size) / 2, size, size).scaled(puzzleWidget->imageSize(),
-            puzzleWidget->imageSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    int size = qMin(_puzzleImage.width(), _puzzleImage.height());
+    QRect imageRect((_puzzleImage.width() - size) / 2,
+                     (_puzzleImage.height() - size) / 2,
+                     size, size);
+    QPixmap currentPixmap = _puzzleImage.copy(imageRect);
+
+    int imageSize = _puzzleWidget->imageSize();
+    _puzzleImage = currentPixmap.scaled(imageSize, imageSize,
+                                        Qt::IgnoreAspectRatio,
+                                        Qt::SmoothTransformation);
 
     qsrand(QCursor::pos().x() ^ QCursor::pos().y());
 
-    model->addPieces(puzzleImage);
-    puzzleWidget->clear();
-}
-
-void MainWindow::setupMenus()
-{
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-
-    QAction *openAction = fileMenu->addAction(tr("&Open..."));
-    openAction->setShortcuts(QKeySequence::Open);
-
-    QAction *exitAction = fileMenu->addAction(tr("E&xit"));
-    exitAction->setShortcuts(QKeySequence::Quit);
-
-    QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
-
-    QAction *restartAction = gameMenu->addAction(tr("&Restart"));
-
-    connect(openAction, SIGNAL(triggered()), this, SLOT(openImage()));
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
-    connect(restartAction, SIGNAL(triggered()), this, SLOT(setupPuzzle()));
+    _model->addPieces(_puzzleImage);
+    _puzzleWidget->clear();
 }
 
 void MainWindow::setupWidgets()
@@ -127,25 +80,40 @@ void MainWindow::setupWidgets()
     QFrame *frame = new QFrame;
     QHBoxLayout *frameLayout = new QHBoxLayout(frame);
 
-    puzzleWidget = new PuzzleWidget(400);
+    const int MARGINS = 20;
+    QSize availableScreenSize = qApp->primaryScreen()->availableSize();
+    availableScreenSize.rheight() -= 2 * MARGINS;
 
-    piecesList = new QListView;
-    piecesList->setDragEnabled(true);
-    piecesList->setViewMode(QListView::IconMode);
-    piecesList->setIconSize(QSize(puzzleWidget->pieceSize() - 20, puzzleWidget->pieceSize() - 20));
-    piecesList->setGridSize(QSize(puzzleWidget->pieceSize(), puzzleWidget->pieceSize()));
-    piecesList->setSpacing(10);
-    piecesList->setMovement(QListView::Snap);
-    piecesList->setAcceptDrops(true);
-    piecesList->setDropIndicatorShown(true);
+    int imageHeight = availableScreenSize.height();
 
-    PiecesModel *model = new PiecesModel(puzzleWidget->pieceSize(), this);
-    piecesList->setModel(model);
+    _puzzleWidget = new PuzzleWidget(PIECE_COUNT_BY_SIDE, imageHeight);
 
-    connect(puzzleWidget, SIGNAL(puzzleCompleted()),
+    static const int offset = 20;
+    int pieceSize = _puzzleWidget->pieceSize();
+    int iconSize = pieceSize - offset;
+    int gridSize = pieceSize;
+
+    _piecesList = new QListView;
+    _piecesList->setDragEnabled(true);
+    _piecesList->setViewMode(QListView::IconMode);
+
+//    _piecesList->setFixedWidth(pieceSize + 2 * offset);
+    _piecesList->setIconSize(QSize(iconSize, iconSize));
+    _piecesList->setGridSize(QSize(gridSize, gridSize));
+    _piecesList->setSpacing(10);
+
+    _piecesList->setMovement(QListView::Snap);
+    _piecesList->setAcceptDrops(true);
+    _piecesList->setDropIndicatorShown(true);
+
+    PiecesModel *model = new PiecesModel(PIECE_COUNT_BY_SIDE,
+                                         _puzzleWidget->pieceSize(), this);
+    _piecesList->setModel(model);
+
+    connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
             this, SLOT(setCompleted()), Qt::QueuedConnection);
 
-    frameLayout->addWidget(piecesList);
-    frameLayout->addWidget(puzzleWidget);
+    frameLayout->addWidget(_piecesList);
+    frameLayout->addWidget(_puzzleWidget);
     setCentralWidget(frame);
 }
