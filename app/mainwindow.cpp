@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setWindowState(Qt::WindowFullScreen);
     setWindowTitle(tr("Puzzle"));
+
+    setupTimer();
 }
 
 void MainWindow::openImage(const QString &path)
@@ -46,15 +48,28 @@ void MainWindow::openImage(const QString &path)
             return;
         }
         _puzzleImage = newImage;
-        setupPuzzle();
+
+        resetPuzzle();
     }
 }
 
 void MainWindow::setCompleted()
 {
     playMusic();
+}
 
-    setupPuzzle();
+void MainWindow::updateLcdTime()
+{
+    _remainingTimeWidget->display(_puzzleTimer.remainingTime() / 1000);
+    QTimer::singleShot(1000, this, &MainWindow::updateLcdTime);
+}
+
+void MainWindow::setupTimer()
+{
+    _puzzleTimer.setInterval(TIMER_PERIOD);
+    _puzzleTimer.setSingleShot(false);
+
+    connect(&_puzzleTimer, SIGNAL(timeout()), SLOT(gameOver()));
 }
 
 void MainWindow::setupPuzzle()
@@ -76,11 +91,30 @@ void MainWindow::setupPuzzle()
     _puzzleWidget->clear();
 }
 
+void MainWindow::gameOver()
+{
+    _puzzleTimer.stop();
+
+    QMessageBox::warning(nullptr, tr("GAME OVER"),
+                         tr("You lose the game."),
+                         QMessageBox::Ok);
+
+
+    QTimer::singleShot(TIMER_PERIOD, this, &MainWindow::resetPuzzle);
+}
+
+void MainWindow::resetPuzzle()
+{
+    setupPuzzle();
+
+    _puzzleTimer.stop();
+    _puzzleTimer.start(TIMER_PERIOD);
+
+    updateLcdTime();
+}
+
 void MainWindow::setupWidgets()
 {
-    QFrame *frame = new QFrame;
-    QHBoxLayout *frameLayout = new QHBoxLayout(frame);
-
     const int MARGINS = 20;
     QSize availableScreenSize = qApp->primaryScreen()->availableSize();
     availableScreenSize.rheight() -= 2 * MARGINS;
@@ -114,9 +148,25 @@ void MainWindow::setupWidgets()
     connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
             this, SLOT(setCompleted()), Qt::QueuedConnection);
 
-    frameLayout->addWidget(_piecesList);
-    frameLayout->addWidget(_puzzleWidget);
-    setCentralWidget(frame);
+    _remainingTimeWidget = new QLCDNumber;
+
+    QHBoxLayout *remaininTimeLayout = new QHBoxLayout;
+    remaininTimeLayout->addWidget(new QLabel("<h1><center>Time:</center></h1>"));
+    remaininTimeLayout->addWidget(_remainingTimeWidget);
+
+    QVBoxLayout *rightLayout = new QVBoxLayout;
+    rightLayout->addLayout(remaininTimeLayout);
+    rightLayout->addWidget(_puzzleWidget);
+
+    QFrame *gameFrame = new QFrame;
+    QHBoxLayout *gameLayout = new QHBoxLayout(gameFrame);
+    gameLayout->addWidget(_piecesList);
+    gameLayout->addLayout(rightLayout);
+
+//    QFrame *centralFrame = new QFrame;
+//    QHBoxLayout *centralLayout = new QHBoxLayout(centralFrame);
+//    centralLayout->addWidget(gameFrame);
+    setCentralWidget(gameFrame);
 }
 
 void MainWindow::playMusic()

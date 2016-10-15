@@ -3,12 +3,14 @@
 
 #include <QMainWindow>
 #include <QPixmap>
+#include <QTimer>
 
 class PuzzleWidget;
 class PiecesModel;
 QT_BEGIN_NAMESPACE
 class QListView;
 QT_END_NAMESPACE
+class QLCDNumber;
 
 class MainWindow : public QMainWindow
 {
@@ -22,9 +24,13 @@ public slots:
     void setupPuzzle();
 
 private slots:
+    void gameOver();
+    void resetPuzzle();
     void setCompleted();
+    void updateLcdTime();
 
 private:
+    void setupTimer();
     void setupWidgets();
     void playMusic();
 
@@ -33,6 +39,10 @@ private:
     PuzzleWidget *_puzzleWidget;
     PiecesModel *_model;
 
+    QLCDNumber *_remainingTimeWidget;
+    QTimer _puzzleTimer;
+
+    static const int TIMER_PERIOD = 10000;
     static const int PIECE_COUNT_BY_SIDE = 2;
 };
 
