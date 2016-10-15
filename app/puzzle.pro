@@ -1,4 +1,6 @@
-QT += widgets
+QT += widgets multimedia
+
+CONFIG += c++11
 
 HEADERS     = mainwindow.h \
               puzzlepiece.h \

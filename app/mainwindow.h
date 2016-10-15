@@ -26,6 +26,7 @@ private slots:
 
 private:
     void setupWidgets();
+    void playMusic();
 
     QPixmap _puzzleImage;
     QListView *_piecesList;

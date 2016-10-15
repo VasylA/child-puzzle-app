@@ -5,6 +5,10 @@
 
 #include <QtWidgets>
 #include <QApplication>
+
+//#include <QtMultimedia/QMediaPlayer>
+//#include <QSound>
+
 #include <stdlib.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -48,10 +52,7 @@ void MainWindow::openImage(const QString &path)
 
 void MainWindow::setCompleted()
 {
-    QMessageBox::information(this, tr("Puzzle Completed"),
-                             tr("Congratulations! You have completed the puzzle!\n"
-                                "Click OK to start again."),
-                             QMessageBox::Ok);
+    playMusic();
 
     setupPuzzle();
 }
@@ -116,4 +117,16 @@ void MainWindow::setupWidgets()
     frameLayout->addWidget(_piecesList);
     frameLayout->addWidget(_puzzleWidget);
     setCentralWidget(frame);
+}
+
+void MainWindow::playMusic()
+{
+//    QMediaPlayer *player = new QMediaPlayer();
+//    player->setMedia(QUrl::fromLocalFile("C:/SVN/honda.mp3"));
+//    player->setVolume(50);
+//    player->play();
+
+//    QSound::play("C:/SVN/0001.wav");
+
+    qDebug(Q_FUNC_INFO);
 }
