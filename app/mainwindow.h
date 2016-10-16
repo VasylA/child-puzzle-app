@@ -11,6 +11,7 @@ QT_BEGIN_NAMESPACE
 class QListView;
 QT_END_NAMESPACE
 class QStackedWidget;
+class QMediaPlayer;
 class QLCDNumber;
 class QFrame;
 class QLabel;
@@ -42,6 +43,8 @@ private:
     PuzzleWidget *_puzzleWidget;
     PiecesModel *_model;
 
+    QMediaPlayer *_soundPlayer;
+
     QLCDNumber *_remainingTimeWidget;
     QTimer _puzzleTimer;
 
@@ -54,7 +57,7 @@ private:
     //--------------------------------------
 
     static const int GAME_TIMER_PERIOD = 10000;
-    static const int GAME_RESET_PERIOD = 10000;
+    static const int GAME_RESET_PERIOD = 15000;
     static const int PIECE_COUNT_BY_SIDE = 2;
 };
 

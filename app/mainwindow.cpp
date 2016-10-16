@@ -6,7 +6,7 @@
 #include <QtWidgets>
 #include <QApplication>
 
-//#include <QtMultimedia/QMediaPlayer>
+#include <QtMultimedia/QMediaPlayer>
 //#include <QSound>
 
 #include <stdlib.h>
@@ -20,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent)
     setupWidgets();
     _model = new PiecesModel(PIECE_COUNT_BY_SIDE, _puzzleWidget->pieceSize(), this);
     _piecesList->setModel(_model);
+
+    _soundPlayer = new QMediaPlayer(this);
+    _soundPlayer->setVolume(100);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setWindowState(Qt::WindowFullScreen);
@@ -35,7 +38,7 @@ void MainWindow::openImage(const QString &path)
     if (fileName.isNull())
     {
         fileName = QFileDialog::getOpenFileName(this,
-            tr("Open Image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
+                                                tr("Open Image"), "", tr("Image Files (*.png *.jpg *.bmp)"));
     }
 
     if (!fileName.isEmpty())
@@ -59,7 +62,11 @@ void MainWindow::setCompleted()
 
     _stackedWidget->setCurrentWidget(_winFrame);
 
-    playMusic();
+    _soundPlayer->stop();
+    _soundPlayer->setMedia(QUrl::fromLocalFile("D:/Dropbox/Projects/Current/Git/child-puzzle-app/app/win_sound.mp3"));
+    _soundPlayer->play();
+
+    //    playMusic();
 
     QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
 }
@@ -82,8 +89,8 @@ void MainWindow::setupPuzzle()
 {
     int size = qMin(_puzzleImage.width(), _puzzleImage.height());
     QRect imageRect((_puzzleImage.width() - size) / 2,
-                     (_puzzleImage.height() - size) / 2,
-                     size, size);
+                    (_puzzleImage.height() - size) / 2,
+                    size, size);
     QPixmap currentPixmap = _puzzleImage.copy(imageRect);
 
     int imageSize = _puzzleWidget->imageSize();
@@ -101,6 +108,10 @@ void MainWindow::gameOver()
 {
     _puzzleTimer.stop();
 
+    _soundPlayer->stop();
+    _soundPlayer->setMedia(QUrl::fromLocalFile("D:/Dropbox/Projects/Current/Git/child-puzzle-app/app/lose_sound.mp3"));
+    _soundPlayer->play();
+
     _stackedWidget->setCurrentWidget(_loseFrame);
 
     QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
@@ -109,6 +120,7 @@ void MainWindow::gameOver()
 void MainWindow::resetPuzzle()
 {
     _puzzleTimer.stop();
+    _soundPlayer->stop();
 
     setupPuzzle();
     _stackedWidget->setCurrentWidget(_gameFrame);
