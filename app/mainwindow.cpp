@@ -55,18 +55,24 @@ void MainWindow::openImage(const QString &path)
 
 void MainWindow::setCompleted()
 {
+    _puzzleTimer.stop();
+
+    _stackedWidget->setCurrentWidget(_winFrame);
+
     playMusic();
+
+    QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
 }
 
 void MainWindow::updateLcdTime()
 {
     _remainingTimeWidget->display(_puzzleTimer.remainingTime() / 1000);
-    QTimer::singleShot(1000, this, &MainWindow::updateLcdTime);
+    QTimer::singleShot(1000, this, SLOT(updateLcdTime()));
 }
 
 void MainWindow::setupTimer()
 {
-    _puzzleTimer.setInterval(TIMER_PERIOD);
+    _puzzleTimer.setInterval(GAME_TIMER_PERIOD);
     _puzzleTimer.setSingleShot(false);
 
     connect(&_puzzleTimer, SIGNAL(timeout()), SLOT(gameOver()));
@@ -95,21 +101,19 @@ void MainWindow::gameOver()
 {
     _puzzleTimer.stop();
 
-    QMessageBox::warning(nullptr, tr("GAME OVER"),
-                         tr("You lose the game."),
-                         QMessageBox::Ok);
+    _stackedWidget->setCurrentWidget(_loseFrame);
 
-
-    QTimer::singleShot(TIMER_PERIOD, this, &MainWindow::resetPuzzle);
+    QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
 }
 
 void MainWindow::resetPuzzle()
 {
-    setupPuzzle();
-
     _puzzleTimer.stop();
-    _puzzleTimer.start(TIMER_PERIOD);
 
+    setupPuzzle();
+    _stackedWidget->setCurrentWidget(_gameFrame);
+
+    _puzzleTimer.start(GAME_TIMER_PERIOD);
     updateLcdTime();
 }
 
@@ -158,15 +162,29 @@ void MainWindow::setupWidgets()
     rightLayout->addLayout(remaininTimeLayout);
     rightLayout->addWidget(_puzzleWidget);
 
-    QFrame *gameFrame = new QFrame;
-    QHBoxLayout *gameLayout = new QHBoxLayout(gameFrame);
+    _gameFrame = new QFrame;
+    QHBoxLayout *gameLayout = new QHBoxLayout(_gameFrame);
     gameLayout->addWidget(_piecesList);
     gameLayout->addLayout(rightLayout);
 
-//    QFrame *centralFrame = new QFrame;
-//    QHBoxLayout *centralLayout = new QHBoxLayout(centralFrame);
-//    centralLayout->addWidget(gameFrame);
-    setCentralWidget(gameFrame);
+
+    _winFrame = new QLabel;
+    _winFrame->setText("<h1 style='color:green'>You win!!!</h1>");
+    _winFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _winFrame->setAlignment(Qt::AlignCenter);
+
+
+    _loseFrame = new QLabel;
+    _loseFrame->setText("<h1 style='color:red'>You lose!!!</h1>");
+    _loseFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _loseFrame->setAlignment(Qt::AlignCenter);
+
+    _stackedWidget = new QStackedWidget;
+    _stackedWidget->addWidget(_gameFrame);
+    _stackedWidget->addWidget(_loseFrame);
+    _stackedWidget->addWidget(_winFrame);
+
+    setCentralWidget(_stackedWidget);
 }
 
 void MainWindow::playMusic()
