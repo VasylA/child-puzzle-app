@@ -4,6 +4,7 @@
 #include "puzzlewidget.h"
 
 #include "accessgrantedwidget.h"
+#include "accessdeniedwidget.h"
 
 #include <QtWidgets>
 #include <QApplication>
@@ -188,12 +189,11 @@ void MainWindow::setupWidgets()
 
     _winFrame = new AccessGrantedWidget;
     _winFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _winFrame->setTextSize(TEXT_PIXEL_SIZE);
 
-
-    _loseFrame = new QLabel;
-    _loseFrame->setText("<h1 style='color:red'>You lose!!!</h1>");
+    _loseFrame = new AccessDeniedWidget;
     _loseFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    _loseFrame->setAlignment(Qt::AlignCenter);
+    _loseFrame->setTextSize(TEXT_PIXEL_SIZE);
 
     _stackedWidget = new QStackedWidget;
     _stackedWidget->addWidget(_gameFrame);

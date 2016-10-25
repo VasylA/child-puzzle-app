@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-class QPropertyAnimation;
+class QLabel;
 
 class AccessDeniedWidget : public QWidget
 {
@@ -11,9 +11,27 @@ class AccessDeniedWidget : public QWidget
 public:
     explicit AccessDeniedWidget(QWidget *parent = 0);
 
+    int textSize() const;
+    void setTextSize(int textSize);
+
 signals:
 
 public slots:
+
+private:
+    void initUi();
+    void updateLabel();
+
+private slots:
+    void runAnimation();
+
+private:
+    static const QString labelText;
+
+    QLabel *_accessLabel;
+    bool _isWarningColor;
+
+    int _textSize;
 };
 
 #endif // ACCESSDENIEDWIDGET_H

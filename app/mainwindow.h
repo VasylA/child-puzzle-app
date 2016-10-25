@@ -17,6 +17,7 @@ class QFrame;
 class QLabel;
 
 class AccessGrantedWidget;
+class AccessDeniedWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -54,13 +55,14 @@ private:
     QStackedWidget *_stackedWidget;
 
     QFrame *_gameFrame;
-    QLabel *_loseFrame;
+    AccessDeniedWidget *_loseFrame;
     AccessGrantedWidget *_winFrame;
     //--------------------------------------
 
     static const int GAME_TIMER_PERIOD = 10000;
-    static const int GAME_RESET_PERIOD = 15000;
+    static const int GAME_RESET_PERIOD = 25000;
     static const int PIECE_COUNT_BY_SIDE = 2;
+    static const int TEXT_PIXEL_SIZE = 120;
 };
 
 #endif // MAINWINDOW_H
