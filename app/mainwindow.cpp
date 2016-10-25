@@ -3,6 +3,8 @@
 #include "piecesmodel.h"
 #include "puzzlewidget.h"
 
+#include "accessgrantedwidget.h"
+
 #include <QtWidgets>
 #include <QApplication>
 
@@ -127,6 +129,10 @@ void MainWindow::resetPuzzle()
 
     _puzzleTimer.start(GAME_TIMER_PERIOD);
     updateLcdTime();
+
+
+    _soundPlayer->setMedia(QUrl::fromLocalFile("qrc:/sound/win_sound.mp3"));
+    _soundPlayer->play();
 }
 
 void MainWindow::setupWidgets()
@@ -180,10 +186,8 @@ void MainWindow::setupWidgets()
     gameLayout->addLayout(rightLayout);
 
 
-    _winFrame = new QLabel;
-    _winFrame->setText("<h1 style='color:green'>You win!!!</h1>");
+    _winFrame = new AccessGrantedWidget;
     _winFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    _winFrame->setAlignment(Qt::AlignCenter);
 
 
     _loseFrame = new QLabel;

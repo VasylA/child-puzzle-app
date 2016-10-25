@@ -16,6 +16,8 @@ class QLCDNumber;
 class QFrame;
 class QLabel;
 
+class AccessGrantedWidget;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -53,7 +55,7 @@ private:
 
     QFrame *_gameFrame;
     QLabel *_loseFrame;
-    QLabel *_winFrame;
+    AccessGrantedWidget *_winFrame;
     //--------------------------------------
 
     static const int GAME_TIMER_PERIOD = 10000;

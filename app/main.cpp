@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "accessgrantedwidget.h"
 
 #include <QApplication>
 
