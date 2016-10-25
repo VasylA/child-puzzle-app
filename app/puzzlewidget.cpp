@@ -93,7 +93,7 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
         if (location == loacationForSquare)
         {
             _inPlace++;
-            const int maxPartsCount = (_piecesInRow * _piecesInRow);
+            const int maxPartsCount = (_piecesInRow * _piecesInColumn);
             if (_inPlace == maxPartsCount)
                 emit puzzleCompleted();
         }

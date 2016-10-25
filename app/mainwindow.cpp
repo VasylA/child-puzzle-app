@@ -90,10 +90,7 @@ void MainWindow::setupTimer()
 
 void MainWindow::setupPuzzle()
 {
-    int size = qMin(_puzzleImage.width(), _puzzleImage.height());
-    QRect imageRect((_puzzleImage.width() - size) / 2,
-                    (_puzzleImage.height() - size) / 2,
-                    size, size);
+    QRect imageRect = _puzzleImage.rect();
     QPixmap currentPixmap = _puzzleImage.copy(imageRect);
 
     QSize imageSize = _puzzleWidget->imageSize();
