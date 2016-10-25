@@ -66,7 +66,7 @@ void MainWindow::setCompleted()
     _stackedWidget->setCurrentWidget(_winFrame);
 
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile("D:/Dropbox/Projects/Current/Git/child-puzzle-app/app/win_sound.mp3"));
+    _soundPlayer->setMedia(QUrl::fromLocalFile("/home/pi/Documents/Projects/child-puzzle-app/app/win_sound.mp3"));
     _soundPlayer->play();
 
     //    playMusic();
@@ -112,7 +112,7 @@ void MainWindow::gameOver()
     _puzzleTimer.stop();
 
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile("D:/Dropbox/Projects/Current/Git/child-puzzle-app/app/lose_sound.mp3"));
+    _soundPlayer->setMedia(QUrl::fromLocalFile("/home/pi/Documents/Projects/child-puzzle-app/app/lose_sound.mp3"));
     _soundPlayer->play();
 
     _stackedWidget->setCurrentWidget(_loseFrame);
@@ -132,8 +132,8 @@ void MainWindow::resetPuzzle()
     updateLcdTime();
 
 
-    _soundPlayer->setMedia(QUrl::fromLocalFile("qrc:/sound/win_sound.mp3"));
-    _soundPlayer->play();
+//    _soundPlayer->setMedia(QUrl::fromLocalFile("qrc:/sound/win_sound.mp3"));
+//    _soundPlayer->play();
 }
 
 void MainWindow::setupWidgets()
