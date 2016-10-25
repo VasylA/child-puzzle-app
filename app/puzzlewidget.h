@@ -17,11 +17,11 @@ class PuzzleWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit PuzzleWidget(int piecesBySide, int imageSize, QWidget *parent = 0);
+    explicit PuzzleWidget(int rowCount, int columnCount, QSize imageSize, QWidget *parent = 0);
     void clear();
 
-    int pieceSize() const;
-    int imageSize() const;
+    QSize pieceSize() const;
+    QSize imageSize() const;
 
 signals:
     void puzzleCompleted();
@@ -44,8 +44,12 @@ private:
     QList<QPoint> _pieceLocations;
     QList<QPixmap> _piecePixmaps;
     QRect _highlightedRect;
-    int _piecesBySide;
-    int _imageSize;
+
+    int _piecesInRow;
+    int _piecesInColumn;
+
+    QSize _imageSize;
+
     int _inPlace;
 };
 

@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
       _model(nullptr)
 {
     setupWidgets();
-    _model = new PiecesModel(PIECE_COUNT_BY_SIDE, _puzzleWidget->pieceSize(), this);
+    _model = new PiecesModel(PIECE_COUNT_BY_SIDE, PIECE_COUNT_BY_SIDE, _puzzleWidget->pieceSize(), this);
     _piecesList->setModel(_model);
 
     _soundPlayer = new QMediaPlayer(this);
@@ -96,8 +96,9 @@ void MainWindow::setupPuzzle()
                     size, size);
     QPixmap currentPixmap = _puzzleImage.copy(imageRect);
 
-    int imageSize = _puzzleWidget->imageSize();
-    _puzzleImage = currentPixmap.scaled(imageSize, imageSize,
+    QSize imageSize = _puzzleWidget->imageSize();
+    _puzzleImage = currentPixmap.scaled(imageSize.width(),
+                                        imageSize.height(),
                                         Qt::IgnoreAspectRatio,
                                         Qt::SmoothTransformation);
 
@@ -144,20 +145,21 @@ void MainWindow::setupWidgets()
 
     int imageHeight = availableScreenSize.height();
 
-    _puzzleWidget = new PuzzleWidget(PIECE_COUNT_BY_SIDE, imageHeight);
+    _puzzleWidget = new PuzzleWidget(PIECE_COUNT_BY_SIDE, PIECE_COUNT_BY_SIDE, QSize(imageHeight, imageHeight));
 
     static const int offset = 20;
-    int pieceSize = _puzzleWidget->pieceSize();
-    int iconSize = pieceSize - offset;
-    int gridSize = pieceSize;
+    QSize pieceSize = _puzzleWidget->pieceSize();
+
+    QSize iconSize(pieceSize.width() - offset, pieceSize.height() - offset);
+    QSize gridSize = pieceSize;
 
     _piecesList = new QListView;
     _piecesList->setDragEnabled(true);
     _piecesList->setViewMode(QListView::IconMode);
 
 //    _piecesList->setFixedWidth(pieceSize + 2 * offset);
-    _piecesList->setIconSize(QSize(iconSize, iconSize));
-    _piecesList->setGridSize(QSize(gridSize, gridSize));
+    _piecesList->setIconSize(iconSize);
+    _piecesList->setGridSize(gridSize);
     _piecesList->setSpacing(10);
 
     _piecesList->setMovement(QListView::Snap);
@@ -165,6 +167,7 @@ void MainWindow::setupWidgets()
     _piecesList->setDropIndicatorShown(true);
 
     PiecesModel *model = new PiecesModel(PIECE_COUNT_BY_SIDE,
+                                         PIECE_COUNT_BY_SIDE,
                                          _puzzleWidget->pieceSize(), this);
     _piecesList->setModel(model);
 

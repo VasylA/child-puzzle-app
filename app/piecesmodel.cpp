@@ -4,11 +4,12 @@
 #include <QIcon>
 #include <QMimeData>
 
-PiecesModel::PiecesModel(int pieceCountBySide,
-                         int pieceSize,
+PiecesModel::PiecesModel(int pieceCountInRow, int pieceCountInCol,
+                         QSize pieceSize,
                          QObject *parent)
     : QAbstractListModel(parent),
-      _pieceCountBySide(pieceCountBySide),
+      _pieceCountInRow(pieceCountInRow),
+      _pieceCountInColumn(pieceCountInCol),
       _pieceSize(pieceSize)
 {
 }
@@ -21,7 +22,7 @@ QVariant PiecesModel::data(const QModelIndex &index, int role) const
     if (role == Qt::DecorationRole)
     {
         QPixmap currentPixmap = _pixmaps.value(index.row());
-        QPixmap scaledPixmap = currentPixmap.scaled(_pieceSize, _pieceSize,
+        QPixmap scaledPixmap = currentPixmap.scaled(_pieceSize.width(), _pieceSize.height(),
                                                     Qt::KeepAspectRatio,
                                                     Qt::SmoothTransformation);
         return QIcon(scaledPixmap);
@@ -172,19 +173,20 @@ Qt::DropActions PiecesModel::supportedDropActions() const
 void PiecesModel::addPieces(const QPixmap& pixmap)
 {
     int firstRow = 0;
-    int lastRow = (_pieceCountBySide * _pieceCountBySide);
+    int lastRow = (_pieceCountInColumn * _pieceCountInRow);
     beginRemoveRows(QModelIndex(), firstRow, lastRow);
     _pixmaps.clear();
     _locations.clear();
     endRemoveRows();
 
-    for (int y = 0; y < _pieceCountBySide; ++y)
+    for (int y = 0; y < _pieceCountInColumn; ++y)
     {
-        for (int x = 0; x < _pieceCountBySide; ++x)
+        for (int x = 0; x < _pieceCountInRow; ++x)
         {
-            QRect pieceRect(x * _pieceSize,
-                            y * _pieceSize,
-                            _pieceSize, _pieceSize);
+            QRect pieceRect(x * _pieceSize.width(),
+                            y * _pieceSize.height(),
+                            _pieceSize.width(),
+                            _pieceSize.height());
             QPixmap pieceImage = pixmap.copy(pieceRect);
             addPiece(pieceImage, QPoint(x, y));
         }

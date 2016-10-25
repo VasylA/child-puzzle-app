@@ -16,8 +16,9 @@ class PiecesModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit PiecesModel(int pieceCountBySide,
-                         int pieceSize,
+    explicit PiecesModel(int pieceCountInRow,
+                         int pieceCountInCol,
+                         QSize pieceSize,
                          QObject *parent = 0);
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
@@ -38,8 +39,10 @@ private:
     QList<QPoint> _locations;
     QList<QPixmap> _pixmaps;
 
-    int _pieceCountBySide;
-    int _pieceSize;
+    int _pieceCountInRow;
+    int _pieceCountInColumn;
+
+    QSize _pieceSize;
 };
 
 #endif // PIECESLIST_H

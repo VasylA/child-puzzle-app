@@ -3,15 +3,16 @@
 
 #include <QtWidgets>
 
-PuzzleWidget::PuzzleWidget(int piecesBySide, int imageSize, QWidget *parent)
+PuzzleWidget::PuzzleWidget(int rowCount, int columnCount, QSize imageSize, QWidget *parent)
     : QWidget(parent),
-      _piecesBySide(piecesBySide),
+      _piecesInRow(columnCount),
+      _piecesInColumn(rowCount),
       _imageSize(imageSize),
       _inPlace(0)
 {
     setAcceptDrops(true);
-    setMinimumSize(_imageSize, _imageSize);
-    setMaximumSize(_imageSize, _imageSize);
+    setMinimumSize(_imageSize);
+    setMaximumSize(_imageSize);
 }
 
 void PuzzleWidget::clear()
@@ -87,10 +88,12 @@ void PuzzleWidget::dropEvent(QDropEvent *event)
         event->setDropAction(Qt::MoveAction);
         event->accept();
 
-        if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize()))
+        QPoint loacationForSquare(square.x() / pieceSize().width(),
+                                  square.y() / pieceSize().height());
+        if (location == loacationForSquare)
         {
             _inPlace++;
-            const int maxPartsCount = (_piecesBySide * _piecesBySide);
+            const int maxPartsCount = (_piecesInRow * _piecesInRow);
             if (_inPlace == maxPartsCount)
                 emit puzzleCompleted();
         }
@@ -126,7 +129,9 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
     _piecePixmaps.removeAt(pieceIndex);
     _pieceRects.removeAt(pieceIndex);
 
-    if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize()))
+    QPoint loacationForSquare(square.x() / pieceSize().width(),
+                              square.y() / pieceSize().height());
+    if (location == loacationForSquare)
         _inPlace--;
 
     update(square);
@@ -152,7 +157,9 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
         _pieceRects.insert(pieceIndex, square);
         update(targetSquare(event->pos()));
 
-        if (location == QPoint(square.x()/pieceSize(), square.y()/pieceSize()))
+        QPoint loacationForSquare(square.x() / pieceSize().width(),
+                                  square.y() / pieceSize().height());
+        if (location == loacationForSquare)
             _inPlace++;
     }
 }
@@ -178,18 +185,22 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
 
 const QRect PuzzleWidget::targetSquare(const QPoint &position) const
 {
-    return QRect(position.x()/pieceSize() * pieceSize(),
-                 position.y()/pieceSize() * pieceSize(),
-                 pieceSize(),
-                 pieceSize());
+    int pieceWidth = pieceSize().width();
+    int pieceHeight = pieceSize().height();
+
+    return QRect(position.x() / pieceWidth * pieceWidth,
+                 position.y() / pieceHeight * pieceHeight,
+                 pieceWidth,
+                 pieceHeight);
 }
 
-int PuzzleWidget::pieceSize() const
+QSize PuzzleWidget::pieceSize() const
 {
-    return _imageSize / _piecesBySide;
+    return QSize(_imageSize.width() / _piecesInRow,
+                 _imageSize.height() / _piecesInColumn);
 }
 
-int PuzzleWidget::imageSize() const
+QSize PuzzleWidget::imageSize() const
 {
     return _imageSize;
 }
