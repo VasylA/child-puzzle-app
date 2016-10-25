@@ -39,7 +39,6 @@ private slots:
 private:
     void setupTimer();
     void setupWidgets();
-    void playMusic();
 
     QPixmap _puzzleImage;
     QListView *_piecesList;

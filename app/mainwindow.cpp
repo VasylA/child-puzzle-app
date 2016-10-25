@@ -66,10 +66,8 @@ void MainWindow::setCompleted()
     _stackedWidget->setCurrentWidget(_winFrame);
 
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile("/home/pi/Documents/Projects/child-puzzle-app/app/win_sound.mp3"));
+    _soundPlayer->setMedia(QUrl("qrc:/sound/win_sound.mp3"));
     _soundPlayer->play();
-
-    //    playMusic();
 
     QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
 }
@@ -110,7 +108,7 @@ void MainWindow::gameOver()
     _puzzleTimer.stop();
 
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile("/home/pi/Documents/Projects/child-puzzle-app/app/lose_sound.mp3"));
+    _soundPlayer->setMedia(QUrl("qrc:/sound/lose_sound.mp3"));
     _soundPlayer->play();
 
     _stackedWidget->setCurrentWidget(_loseFrame);
@@ -128,10 +126,6 @@ void MainWindow::resetPuzzle()
 
     _puzzleTimer.start(GAME_TIMER_PERIOD);
     updateLcdTime();
-
-
-//    _soundPlayer->setMedia(QUrl::fromLocalFile("qrc:/sound/win_sound.mp3"));
-//    _soundPlayer->play();
 }
 
 void MainWindow::setupWidgets()
@@ -201,16 +195,4 @@ void MainWindow::setupWidgets()
     _stackedWidget->addWidget(_winFrame);
 
     setCentralWidget(_stackedWidget);
-}
-
-void MainWindow::playMusic()
-{
-//    QMediaPlayer *player = new QMediaPlayer();
-//    player->setMedia(QUrl::fromLocalFile("C:/SVN/honda.mp3"));
-//    player->setVolume(50);
-//    player->play();
-
-//    QSound::play("C:/SVN/0001.wav");
-
-    qDebug(Q_FUNC_INFO);
 }
