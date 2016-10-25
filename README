@@ -2,3 +2,7 @@ TODO:
 1. Reset puzzle on timer;
 2. Play mp3 after win and lose;
 3. Reset puzzle on suspend more than xxx seconds.
+4. Play .mp3from local resources.
+5. Change timer design.
+6. Reorder elements.
+7. Made piece picker animated.
