@@ -61,7 +61,8 @@ private:
 
     static const int GAME_TIMER_PERIOD = 15000;
     static const int GAME_RESET_PERIOD = 10000;
-    static const int PIECE_COUNT_BY_SIDE = 2;
+    static const int PIECE_COUNT_IN_COLUMN = 2;
+    static const int PIECE_COUNT_IN_ROW = 3;
     static const int TEXT_PIXEL_SIZE = 120;
 };
 

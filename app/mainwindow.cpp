@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
       _model(nullptr)
 {
     setupWidgets();
-    _model = new PiecesModel(PIECE_COUNT_BY_SIDE, PIECE_COUNT_BY_SIDE, _puzzleWidget->pieceSize(), this);
+    _model = new PiecesModel(PIECE_COUNT_IN_ROW, PIECE_COUNT_IN_COLUMN, _puzzleWidget->pieceSize(), this);
     _piecesList->setModel(_model);
 
     _soundPlayer = new QMediaPlayer(this);
@@ -141,11 +141,11 @@ void MainWindow::setupWidgets()
 {
     const int MARGINS = 20;
     QSize availableScreenSize = qApp->primaryScreen()->availableSize();
-    availableScreenSize.rheight() -= 2 * MARGINS;
 
-    int imageHeight = availableScreenSize.height();
+    int imageWidth = 0.75 * availableScreenSize.width() - 2 * MARGINS;
+    int imageHeight = 0.85 * availableScreenSize.height() - 2 * MARGINS;
 
-    _puzzleWidget = new PuzzleWidget(PIECE_COUNT_BY_SIDE, PIECE_COUNT_BY_SIDE, QSize(imageHeight, imageHeight));
+    _puzzleWidget = new PuzzleWidget(PIECE_COUNT_IN_COLUMN, PIECE_COUNT_IN_ROW, QSize(imageWidth, imageHeight));
 
     static const int offset = 20;
     QSize pieceSize = _puzzleWidget->pieceSize();
@@ -166,8 +166,8 @@ void MainWindow::setupWidgets()
     _piecesList->setAcceptDrops(true);
     _piecesList->setDropIndicatorShown(true);
 
-    PiecesModel *model = new PiecesModel(PIECE_COUNT_BY_SIDE,
-                                         PIECE_COUNT_BY_SIDE,
+    PiecesModel *model = new PiecesModel(PIECE_COUNT_IN_ROW,
+                                         PIECE_COUNT_IN_COLUMN,
                                          _puzzleWidget->pieceSize(), this);
     _piecesList->setModel(model);
 
