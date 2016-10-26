@@ -76,20 +76,22 @@ bool SettingsManager::loadTimeSettings(QXmlStreamReader &reader)
 
     QXmlStreamAttributes attributes = reader.attributes();
 
-    int gameTimerPeriod = 0;
-    int resetTimePeriod = 0;
+    int gameTimerSecondsPeriod = 0;
+    int resetTimeSecondsPeriod = 0;
 
     if (attributes.hasAttribute("gameTime"))
-        gameTimerPeriod = attributes.value("gameTime").toString().toInt();
+        gameTimerSecondsPeriod = attributes.value("gameTime").toString().toInt();
 
     if (attributes.hasAttribute("resetTime"))
-        resetTimePeriod = attributes.value("resetTime").toString().toInt();
+        resetTimeSecondsPeriod = attributes.value("resetTime").toString().toInt();
 
-    if (gameTimerPeriod > 0)
-        _settings.gameTimerPeriod = gameTimerPeriod;
+    const int millisecondsPerSecond = 1000;
 
-    if (resetTimePeriod > 0)
-        _settings.gameResetPeriod = resetTimePeriod;
+    if (gameTimerSecondsPeriod > 0)
+        _settings.gameTimerPeriod = gameTimerSecondsPeriod * millisecondsPerSecond;
+
+    if (resetTimeSecondsPeriod > 0)
+        _settings.gameResetPeriod = resetTimeSecondsPeriod * millisecondsPerSecond;
 
     return true;
 }

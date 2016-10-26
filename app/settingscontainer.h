@@ -6,8 +6,8 @@ struct SettingsContainer
     SettingsContainer()
         : rowCount(2),
           columnCount(3),
-          gameTimerPeriod(20),  //seconds
-          gameResetPeriod(10)   //seconds
+          gameTimerPeriod(20000),  //milliseconds
+          gameResetPeriod(10000)   //milliseconds
     {}
 
     int rowCount;
