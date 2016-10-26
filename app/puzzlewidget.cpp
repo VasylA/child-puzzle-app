@@ -168,7 +168,7 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter;
     painter.begin(this);
-    painter.fillRect(event->rect(), Qt::white);
+    painter.fillRect(event->rect(), Qt::lightGray);
 
     if (_highlightedRect.isValid())
     {

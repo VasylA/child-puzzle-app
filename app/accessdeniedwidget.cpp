@@ -42,9 +42,6 @@ void AccessDeniedWidget::runAnimation()
 {
     _isWarningColor = !_isWarningColor;
 
-//    QString labelColorString = (_isWarningColor) ? "#F00" : "#000";
-//    QString labelText = QString("<p style='font-size:120px; color:#000'>Access Denied</p>");
-
     QColor textColor = (_isWarningColor) ? Qt::black : Qt::red;
     QColor bgColor = (_isWarningColor) ? Qt::red : Qt::white;
 

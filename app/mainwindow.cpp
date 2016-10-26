@@ -6,11 +6,12 @@
 #include "accessgrantedwidget.h"
 #include "accessdeniedwidget.h"
 
+#include <QPalette>
 #include <QtWidgets>
 #include <QApplication>
+#include <QLinearGradient>
 
 #include <QtMultimedia/QMediaPlayer>
-//#include <QSound>
 
 #include <stdlib.h>
 
@@ -72,10 +73,22 @@ void MainWindow::setCompleted()
     QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
 }
 
-void MainWindow::updateLcdTime()
+void MainWindow::updateTimeDisplay()
 {
-    _remainingTimeWidget->display(_puzzleTimer.remainingTime() / 1000);
-    QTimer::singleShot(1000, this, SLOT(updateLcdTime()));
+    int remainingTime = _puzzleTimer.remainingTime() / 1000;
+    QString timeString = QString("<p style='font-size:80px'>Time: %0</p>").arg(remainingTime);
+    _remainingTimeWidget->setText(timeString);
+
+    int redChanel = 255 * (1 - 1000.0 * remainingTime / GAME_TIMER_PERIOD);
+    int greenChanel = 50;
+    int blueChanel = 255 * 1000.0 * remainingTime / GAME_TIMER_PERIOD;
+    QColor textColor = QColor(redChanel, greenChanel, blueChanel);
+
+    QPalette colorScheme(_remainingTimeWidget->palette());
+    colorScheme.setBrush(QPalette::WindowText, textColor);
+    _remainingTimeWidget->setPalette(colorScheme);
+
+    QTimer::singleShot(1000, this, SLOT(updateTimeDisplay()));
 }
 
 void MainWindow::setupTimer()
@@ -125,50 +138,59 @@ void MainWindow::resetPuzzle()
     _stackedWidget->setCurrentWidget(_gameFrame);
 
     _puzzleTimer.start(GAME_TIMER_PERIOD);
-    updateLcdTime();
+    updateTimeDisplay();
 }
 
 void MainWindow::setupWidgets()
 {
-    const int MARGINS = 20;
-    QSize availableScreenSize = qApp->primaryScreen()->availableSize();
+    const double margins = 10;
+    QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
-    int imageWidth = 0.75 * availableScreenSize.width() - 2 * MARGINS;
-    int imageHeight = 0.85 * availableScreenSize.height() - 2 * MARGINS;
+    double imageWidth = 0.8 * availableScreenSize.width() - 2 * margins;
+    double imageHeight = 0.9 * availableScreenSize.height() - 2 * margins;
 
     _puzzleWidget = new PuzzleWidget(PIECE_COUNT_IN_COLUMN, PIECE_COUNT_IN_ROW, QSize(imageWidth, imageHeight));
 
-    static const int offset = 20;
-    QSize pieceSize = _puzzleWidget->pieceSize();
+    double gridWidth = 0.2 * availableScreenSize.width();
+    double iconWidth = 0.9 * gridWidth;
 
-    QSize iconSize(pieceSize.width() - offset, pieceSize.height() - offset);
-    QSize gridSize = pieceSize;
+    QSizeF iconSize(iconWidth, iconWidth);
+    QSizeF gridSize(gridWidth, gridWidth);
 
     _piecesList = new QListView;
     _piecesList->setDragEnabled(true);
     _piecesList->setViewMode(QListView::IconMode);
+    _piecesList->setWrapping(true);
 
-//    _piecesList->setFixedWidth(pieceSize + 2 * offset);
-    _piecesList->setIconSize(iconSize);
-    _piecesList->setGridSize(gridSize);
+    _piecesList->setIconSize(iconSize.toSize());
+    _piecesList->setGridSize(gridSize.toSize());
     _piecesList->setSpacing(10);
 
     _piecesList->setMovement(QListView::Snap);
     _piecesList->setAcceptDrops(true);
     _piecesList->setDropIndicatorShown(true);
 
+    _piecesList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    _piecesList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     PiecesModel *model = new PiecesModel(PIECE_COUNT_IN_ROW,
                                          PIECE_COUNT_IN_COLUMN,
                                          _puzzleWidget->pieceSize(), this);
     _piecesList->setModel(model);
 
+    QPalette puzzleSourcePalette = _piecesList->palette();
+    puzzleSourcePalette.setBrush(QPalette::Base, Qt::lightGray);
+    _piecesList->setAutoFillBackground(true);
+    _piecesList->setPalette(puzzleSourcePalette);
+
+
     connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
             this, SLOT(setCompleted()), Qt::QueuedConnection);
 
-    _remainingTimeWidget = new QLCDNumber;
+    _remainingTimeWidget = new QLabel;
 
     QHBoxLayout *remaininTimeLayout = new QHBoxLayout;
-    remaininTimeLayout->addWidget(new QLabel("<h1><center>Time:</center></h1>"));
+    remaininTimeLayout->addSpacing(100);
     remaininTimeLayout->addWidget(_remainingTimeWidget);
 
     QVBoxLayout *rightLayout = new QVBoxLayout;
@@ -177,8 +199,8 @@ void MainWindow::setupWidgets()
 
     _gameFrame = new QFrame;
     QHBoxLayout *gameLayout = new QHBoxLayout(_gameFrame);
-    gameLayout->addWidget(_piecesList);
     gameLayout->addLayout(rightLayout);
+    gameLayout->addWidget(_piecesList);
 
 
     _winFrame = new AccessGrantedWidget;
@@ -195,4 +217,19 @@ void MainWindow::setupWidgets()
     _stackedWidget->addWidget(_winFrame);
 
     setCentralWidget(_stackedWidget);
+
+
+    QLinearGradient bgGradient;
+    bgGradient.setStart(0, 0);
+    bgGradient.setFinalStop(0, 1);
+    bgGradient.setColorAt(0.0, QColor(120, 230, 180));
+    bgGradient.setColorAt(0.2, QColor(120, 180, 180));
+    bgGradient.setColorAt(1.0, QColor(120, 180, 120));
+    bgGradient.setCoordinateMode(QGradient::StretchToDeviceMode);
+
+    QPalette colorScheme(palette());
+    colorScheme.setBrush(QPalette::Background, bgGradient);
+
+    setAutoFillBackground(true);
+    setPalette(colorScheme);
 }

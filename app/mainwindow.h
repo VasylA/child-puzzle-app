@@ -34,7 +34,7 @@ private slots:
     void gameOver();
     void resetPuzzle();
     void setCompleted();
-    void updateLcdTime();
+    void updateTimeDisplay();
 
 private:
     void setupTimer();
@@ -47,7 +47,7 @@ private:
 
     QMediaPlayer *_soundPlayer;
 
-    QLCDNumber *_remainingTimeWidget;
+    QLabel *_remainingTimeWidget;
     QTimer _puzzleTimer;
 
     //--------------------------------------
