@@ -90,7 +90,7 @@ void MainWindow::setCompleted()
 void MainWindow::updateTimeDisplay()
 {
     int remainingTime = _puzzleTimer.remainingTime() / 1000;
-    QString timeString = QString("<p style='font-size:80px'>Time: %0</p>").arg(remainingTime);
+    QString timeString = QString("<p style='font-size:80px'><b>Time: %0</b></p>").arg(remainingTime);
     _remainingTimeWidget->setText(timeString);
 
     int redChanel = 255 * (1 - 1000.0 * remainingTime / _settingsContainer.gameTimerPeriod);

@@ -31,7 +31,7 @@ void AccessDeniedWidget::initUi()
 
 void AccessDeniedWidget::updateLabel()
 {
-    QString htmlText = QString("<p style='font-size:%0px'>%1</p>")
+    QString htmlText = QString("<p style='font-size:%0px'><b>%1</b></p>")
             .arg(_textSize)
             .arg(labelText);
 
