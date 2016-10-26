@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "settingscontainer.h"
+
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTimer>
@@ -39,29 +41,28 @@ private slots:
 private:
     void setupTimer();
     void setupWidgets();
+    void setupGameFrame();
+    void setupPuzzleSource();
+    void loadSettingsFromFile();
 
     QPixmap _puzzleImage;
     QListView *_piecesList;
     PuzzleWidget *_puzzleWidget;
     PiecesModel *_model;
 
-    QMediaPlayer *_soundPlayer;
-
-    QLabel *_remainingTimeWidget;
-    QTimer _puzzleTimer;
-
-    //--------------------------------------
-    QStackedWidget *_stackedWidget;
-
     QFrame *_gameFrame;
     AccessDeniedWidget *_loseFrame;
     AccessGrantedWidget *_winFrame;
-    //--------------------------------------
+    QStackedWidget *_stackedWidget;
 
-    static const int GAME_TIMER_PERIOD = 15000;
-    static const int GAME_RESET_PERIOD = 10000;
-    static const int PIECE_COUNT_IN_COLUMN = 2;
-    static const int PIECE_COUNT_IN_ROW = 3;
+    QLabel *_remainingTimeWidget;
+
+    QMediaPlayer *_soundPlayer;
+    QTimer _puzzleTimer;
+
+    SettingsContainer _settingsContainer;
+
+    static const QString settingsFilePath;
     static const int TEXT_PIXEL_SIZE = 120;
 };
 

@@ -1,10 +1,11 @@
-
 #include "mainwindow.h"
 #include "piecesmodel.h"
 #include "puzzlewidget.h"
 
 #include "accessgrantedwidget.h"
 #include "accessdeniedwidget.h"
+
+#include "settingsmanager.h"
 
 #include <QPalette>
 #include <QtWidgets>
@@ -15,14 +16,27 @@
 
 #include <stdlib.h>
 
+const QString MainWindow::settingsFilePath = "settings.xml";
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       _piecesList(nullptr),
       _puzzleWidget(nullptr),
-      _model(nullptr)
+      _model(nullptr),
+      _gameFrame(nullptr),
+      _loseFrame(nullptr),
+      _winFrame(nullptr),
+      _stackedWidget(nullptr),
+      _remainingTimeWidget(nullptr),
+      _soundPlayer(nullptr)
 {
+    loadSettingsFromFile();
+
     setupWidgets();
-    _model = new PiecesModel(PIECE_COUNT_IN_ROW, PIECE_COUNT_IN_COLUMN, _puzzleWidget->pieceSize(), this);
+    _model = new PiecesModel(_settingsContainer.columnCount,
+                             _settingsContainer.rowCount,
+                             _puzzleWidget->pieceSize(),
+                             this);
     _piecesList->setModel(_model);
 
     _soundPlayer = new QMediaPlayer(this);
@@ -70,7 +84,7 @@ void MainWindow::setCompleted()
     _soundPlayer->setMedia(QUrl("qrc:/sound/win_sound.mp3"));
     _soundPlayer->play();
 
-    QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
+    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(resetPuzzle()));
 }
 
 void MainWindow::updateTimeDisplay()
@@ -79,9 +93,9 @@ void MainWindow::updateTimeDisplay()
     QString timeString = QString("<p style='font-size:80px'>Time: %0</p>").arg(remainingTime);
     _remainingTimeWidget->setText(timeString);
 
-    int redChanel = 255 * (1 - 1000.0 * remainingTime / GAME_TIMER_PERIOD);
+    int redChanel = 255 * (1 - 1000.0 * remainingTime / _settingsContainer.gameTimerPeriod);
     int greenChanel = 50;
-    int blueChanel = 255 * 1000.0 * remainingTime / GAME_TIMER_PERIOD;
+    int blueChanel = 255 * 1000.0 * remainingTime / _settingsContainer.gameTimerPeriod;
     QColor textColor = QColor(redChanel, greenChanel, blueChanel);
 
     QPalette colorScheme(_remainingTimeWidget->palette());
@@ -93,7 +107,7 @@ void MainWindow::updateTimeDisplay()
 
 void MainWindow::setupTimer()
 {
-    _puzzleTimer.setInterval(GAME_TIMER_PERIOD);
+    _puzzleTimer.setInterval(_settingsContainer.gameTimerPeriod);
     _puzzleTimer.setSingleShot(false);
 
     connect(&_puzzleTimer, SIGNAL(timeout()), SLOT(gameOver()));
@@ -126,7 +140,7 @@ void MainWindow::gameOver()
 
     _stackedWidget->setCurrentWidget(_loseFrame);
 
-    QTimer::singleShot(GAME_RESET_PERIOD, this, SLOT(resetPuzzle()));
+    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(resetPuzzle()));
 }
 
 void MainWindow::resetPuzzle()
@@ -137,7 +151,7 @@ void MainWindow::resetPuzzle()
     setupPuzzle();
     _stackedWidget->setCurrentWidget(_gameFrame);
 
-    _puzzleTimer.start(GAME_TIMER_PERIOD);
+    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
     updateTimeDisplay();
 }
 
@@ -149,7 +163,9 @@ void MainWindow::setupWidgets()
     double imageWidth = 0.8 * availableScreenSize.width() - 2 * margins;
     double imageHeight = 0.9 * availableScreenSize.height() - 2 * margins;
 
-    _puzzleWidget = new PuzzleWidget(PIECE_COUNT_IN_COLUMN, PIECE_COUNT_IN_ROW, QSize(imageWidth, imageHeight));
+    _puzzleWidget = new PuzzleWidget(_settingsContainer.rowCount,
+                                     _settingsContainer.columnCount,
+                                     QSize(imageWidth, imageHeight));
 
     double gridWidth = 0.2 * availableScreenSize.width();
     double iconWidth = 0.9 * gridWidth;
@@ -173,9 +189,10 @@ void MainWindow::setupWidgets()
     _piecesList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     _piecesList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    PiecesModel *model = new PiecesModel(PIECE_COUNT_IN_ROW,
-                                         PIECE_COUNT_IN_COLUMN,
-                                         _puzzleWidget->pieceSize(), this);
+    PiecesModel *model = new PiecesModel(_settingsContainer.columnCount,
+                                         _settingsContainer.rowCount,
+                                         _puzzleWidget->pieceSize(),
+                                         this);
     _piecesList->setModel(model);
 
     QPalette puzzleSourcePalette = _piecesList->palette();
@@ -232,4 +249,21 @@ void MainWindow::setupWidgets()
 
     setAutoFillBackground(true);
     setPalette(colorScheme);
+}
+
+void MainWindow::setupGameFrame()
+{
+
+}
+
+void MainWindow::setupPuzzleSource()
+{
+
+}
+
+void MainWindow::loadSettingsFromFile()
+{
+    SettingsManager gameSettingsManager;
+    if (gameSettingsManager.loadSettings(settingsFilePath))
+        _settingsContainer = gameSettingsManager.settings();
 }
