@@ -97,15 +97,24 @@ void MainWindow::setCompleted()
     QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(resetPuzzle()));
 }
 
+void MainWindow::blinkTimeDisplay()
+{
+    QPalette colorScheme(_remainingTimeWidget->palette());
+    colorScheme.setBrush(QPalette::WindowText, Qt::transparent);
+    _remainingTimeWidget->setPalette(colorScheme);
+}
+
 void MainWindow::updateTimeDisplay()
 {
-    int remainingTime = _puzzleTimer.remainingTime() / 1000;
-    QString timeString = QString("<p style='font-size:80px'><b>Time: %0</b></p>").arg(remainingTime);
+    static const int millisecondsPerSecond = 1000;
+
+    int remainingTime = _puzzleTimer.remainingTime() / millisecondsPerSecond;
+    QString timeString = QString("<p style='font-size:80px; font-family:verdana'><b>Time: %0</b></p>").arg(remainingTime);
     _remainingTimeWidget->setText(timeString);
 
-    int redChanel = 255 * (1 - 1000.0 * remainingTime / _settingsContainer.gameTimerPeriod);
     int greenChanel = 50;
-    int blueChanel = 255 * 1000.0 * remainingTime / _settingsContainer.gameTimerPeriod;
+    int blueChanel = 255 * (double)millisecondsPerSecond * remainingTime / _settingsContainer.gameTimerPeriod; //[255-0]
+    int redChanel = 255 -  blueChanel;                                                                         //[0-255]
     QColor textColor = QColor(redChanel, greenChanel, blueChanel);
 
     QPalette colorScheme(_remainingTimeWidget->palette());
@@ -113,6 +122,8 @@ void MainWindow::updateTimeDisplay()
     _remainingTimeWidget->setPalette(colorScheme);
 
     QTimer::singleShot(1000, this, SLOT(updateTimeDisplay()));
+    if (remainingTime < 6)
+        QTimer::singleShot(500, this, SLOT(blinkTimeDisplay()));
 }
 
 void MainWindow::freezeApplication()

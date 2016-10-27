@@ -38,6 +38,7 @@ private slots:
     void gameOver();
     void resetPuzzle();
     void setCompleted();
+    void blinkTimeDisplay();
     void updateTimeDisplay();
     void freezeApplication();
 
