@@ -17,7 +17,8 @@
 
 #include <stdlib.h>
 
-const QString MainWindow::settingsFilePath = "config.xml";
+QString MainWindow::settingsFilePath = "";
+QString MainWindow::soundsDirPath = "";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -33,6 +34,9 @@ MainWindow::MainWindow(QWidget *parent)
       _soundPlayer(nullptr)
 {
     loadSettingsFromFile();
+
+    settingsFilePath = "config.xml";
+    soundsDirPath = QApplication::applicationDirPath() + "/sounds/";
 
     setupWidgets();
     _model = new PiecesModel(_settingsContainer.columnCount,
@@ -75,10 +79,12 @@ void MainWindow::openImage(const QString &path)
     if (!fileName.isEmpty())
     {
         QPixmap newImage;
-        if (!newImage.load(fileName)) {
+        if (!newImage.load(fileName))
+        {
             QMessageBox::warning(this, tr("Open Image"),
                                  tr("The image file could not be loaded."),
                                  QMessageBox::Cancel);
+            close();
             return;
         }
         _puzzleImage = newImage;
@@ -94,7 +100,7 @@ void MainWindow::setCompleted()
     _testpointsController->sendPuzzleCompeteSignalToOutGpios();
 
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl("qrc:/sound/win_sound.mp3"));
+    _soundPlayer->setMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_pass.mp3"));
     _soundPlayer->play();
 
     _stackedWidget->setCurrentWidget(_winFrame);
@@ -168,7 +174,7 @@ void MainWindow::gameOver()
     _testpointsController->sendPuzzleIncompeteSignalToOutGpios();
 
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl("qrc:/sound/lose_sound.mp3"));
+    _soundPlayer->setMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_fail.mp3"));
     _soundPlayer->play();
 
     _stackedWidget->setCurrentWidget(_loseFrame);
@@ -179,7 +185,10 @@ void MainWindow::gameOver()
 void MainWindow::resetPuzzle()
 {
     _puzzleTimer.stop();
+
     _soundPlayer->stop();
+    _soundPlayer->setMedia(QUrl::fromLocalFile(soundsDirPath + "clock.mp3"));
+    _soundPlayer->play();
 
     _testpointsController->resetOutGpiosStatus();
 

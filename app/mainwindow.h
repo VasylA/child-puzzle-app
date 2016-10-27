@@ -50,6 +50,12 @@ private:
     void setupPuzzleSource();
     void loadSettingsFromFile();
 
+private:
+    static QString settingsFilePath;
+    static QString soundsDirPath;
+
+    static const int TEXT_PIXEL_SIZE = 120;
+
     QPixmap _puzzleImage;
     QListView *_piecesList;
     PuzzleWidget *_puzzleWidget;
@@ -68,9 +74,6 @@ private:
     QTimer _puzzleTimer;
 
     SettingsContainer _settingsContainer;
-
-    static const QString settingsFilePath;
-    static const int TEXT_PIXEL_SIZE = 120;
 };
 
 #endif // MAINWINDOW_H
