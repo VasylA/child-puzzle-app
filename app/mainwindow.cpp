@@ -57,6 +57,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(_testpointsController, SIGNAL(signal2()), this, SLOT(reaction2()));
 }
 
+MainWindow::~MainWindow()
+{
+    resetPuzzle();
+}
+
 void MainWindow::openImage(const QString &path)
 {
     QString fileName = path;
@@ -175,6 +180,8 @@ void MainWindow::resetPuzzle()
 {
     _puzzleTimer.stop();
     _soundPlayer->stop();
+
+    _testpointsController->resetOutGpiosStatus();
 
     setupPuzzle();
     _stackedWidget->setCurrentWidget(_gameFrame);
