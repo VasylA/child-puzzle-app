@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+	<timing gameTime="10" resetTime="3"/>
+    <dimentions rowsCount="2" columnsCount="2"/>
+</settings>
