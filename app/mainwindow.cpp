@@ -120,7 +120,7 @@ void MainWindow::updateTimeDisplay()
     static const int millisecondsPerSecond = 1000;
 
     int remainingTime = _puzzleTimer.remainingTime() / millisecondsPerSecond;
-    QString timeString = QString("<p style='font-size:80px; font-family:verdana'><b>Time: %0</b></p>").arg(remainingTime);
+    QString timeString = QString("<p style='font-size:60px; font-family:verdana'><b>Залишилося часу: %0</b></p>").arg(remainingTime);
     _remainingTimeWidget->setText(timeString);
 
     int greenChanel = 50;

@@ -6,7 +6,7 @@
 #include <QRadialGradient>
 #include <QPropertyAnimation>
 
-const QString AccessGrantedWidget::labelText = "Access Granted";
+const QString AccessGrantedWidget::labelText = "Рівень пройдено";
 
 AccessGrantedWidget::AccessGrantedWidget(QWidget *parent)
     : QWidget(parent),
@@ -93,7 +93,7 @@ void AccessGrantedWidget::updateUi()
 
 void AccessGrantedWidget::updateLabel()
 {
-    QString htmlText = QString("<p style='font-size:%0px; font-family:monospace'><b>%1</b></p>")
+    QString htmlText = QString("<p style='font-size:%0px; font-family:verdana'><b>%1</b></p>")
             .arg(_textSize)
             .arg(labelText);
 
