@@ -33,10 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
       _testpointsController(nullptr),
       _soundPlayer(nullptr)
 {
-    loadSettingsFromFile();
-
-    settingsFilePath = "config.xml";
+    settingsFilePath = QApplication::applicationDirPath() + "/config.xml";
     soundsDirPath = QApplication::applicationDirPath() + "/sounds/";
+
+    loadSettingsFromFile();
 
     setupWidgets();
     _model = new PiecesModel(_settingsContainer.columnCount,
