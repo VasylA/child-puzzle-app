@@ -9,17 +9,19 @@
 
 class PuzzleWidget;
 class PiecesModel;
+class AccessGrantedWidget;
+class AccessDeniedWidget;
+class TestpointsController;
+
 QT_BEGIN_NAMESPACE
 class QListView;
-QT_END_NAMESPACE
 class QStackedWidget;
 class QMediaPlayer;
 class QLCDNumber;
 class QFrame;
 class QLabel;
+QT_END_NAMESPACE
 
-class AccessGrantedWidget;
-class AccessDeniedWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -37,6 +39,7 @@ private slots:
     void resetPuzzle();
     void setCompleted();
     void updateTimeDisplay();
+    void freezeApplication();
 
 private:
     void setupTimer();
@@ -56,6 +59,8 @@ private:
     QStackedWidget *_stackedWidget;
 
     QLabel *_remainingTimeWidget;
+
+    TestpointsController *_testpointsController;
 
     QMediaPlayer *_soundPlayer;
     QTimer _puzzleTimer;

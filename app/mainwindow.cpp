@@ -5,6 +5,7 @@
 #include "accessgrantedwidget.h"
 #include "accessdeniedwidget.h"
 
+#include "testpointscontroller.h"
 #include "settingsmanager.h"
 
 #include <QPalette>
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent)
       _winFrame(nullptr),
       _stackedWidget(nullptr),
       _remainingTimeWidget(nullptr),
+      _testpointsController(nullptr),
       _soundPlayer(nullptr)
 {
     loadSettingsFromFile();
@@ -47,6 +49,12 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(tr("Puzzle"));
 
     setupTimer();
+
+    _testpointsController = new TestpointsController;
+    connect(_testpointsController, SIGNAL(appFreezeRequested()), this, SLOT(freezeApplication()));
+    //TODO: Update reaction on next signals
+    connect(_testpointsController, SIGNAL(signal1()), this, SLOT(reaction1()));
+    connect(_testpointsController, SIGNAL(signal2()), this, SLOT(reaction2()));
 }
 
 void MainWindow::openImage(const QString &path)
@@ -78,11 +86,13 @@ void MainWindow::setCompleted()
 {
     _puzzleTimer.stop();
 
-    _stackedWidget->setCurrentWidget(_winFrame);
+    _testpointsController->sendPuzzleCompeteSignalToOutGpios();
 
     _soundPlayer->stop();
     _soundPlayer->setMedia(QUrl("qrc:/sound/win_sound.mp3"));
     _soundPlayer->play();
+
+    _stackedWidget->setCurrentWidget(_winFrame);
 
     QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(resetPuzzle()));
 }
@@ -103,6 +113,11 @@ void MainWindow::updateTimeDisplay()
     _remainingTimeWidget->setPalette(colorScheme);
 
     QTimer::singleShot(1000, this, SLOT(updateTimeDisplay()));
+}
+
+void MainWindow::freezeApplication()
+{
+    //TODO: Implenent this
 }
 
 void MainWindow::setupTimer()
@@ -133,6 +148,8 @@ void MainWindow::setupPuzzle()
 void MainWindow::gameOver()
 {
     _puzzleTimer.stop();
+
+    _testpointsController->sendPuzzleIncompeteSignalToOutGpios();
 
     _soundPlayer->stop();
     _soundPlayer->setMedia(QUrl("qrc:/sound/lose_sound.mp3"));
@@ -253,12 +270,12 @@ void MainWindow::setupWidgets()
 
 void MainWindow::setupGameFrame()
 {
-
+    //TODO: Implenent this
 }
 
 void MainWindow::setupPuzzleSource()
 {
-
+    //TODO: Implenent this
 }
 
 void MainWindow::loadSettingsFromFile()

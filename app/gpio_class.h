@@ -22,6 +22,7 @@ public:
     int setval_gpio(string val); // Set GPIO Value (output pins)
     int getval_gpio(string& val); // Get GPIO Value (input / output pins)
 
+    void set_gpionum(string num); // return the GPIO number associated with the instance of an object
     string get_gpionum(); // return the GPIO number associated with the instance of an object
 
 private:

@@ -97,6 +97,11 @@ int GPIOClass::getval_gpio(string& val){
     return 0;
 }
 
+void GPIOClass::set_gpionum(string num)
+{
+    this->gpionum = num;  //Instatiate GPIOClass object for GPIO pin number "gnum"
+}
+
 string GPIOClass::get_gpionum()
 {
     return this->gpionum;
