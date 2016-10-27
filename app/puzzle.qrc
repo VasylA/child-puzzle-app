@@ -1,7 +1,4 @@
 <RCC>
-    <qresource prefix="/images">
-        <file>puzzleImage.jpg</file>
-    </qresource>
     <qresource prefix="/sound">
         <file>lose_sound.mp3</file>
         <file>win_sound.mp3</file>
