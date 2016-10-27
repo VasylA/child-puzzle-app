@@ -16,7 +16,7 @@
 
 #include <stdlib.h>
 
-const QString MainWindow::settingsFilePath = "settings.xml";
+const QString MainWindow::settingsFilePath = "config.xml";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),

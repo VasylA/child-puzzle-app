@@ -41,7 +41,7 @@ bool SettingsManager::loadSettings(const QString &filePath)
 
     bool isSuccess = true;
 
-    if (!(reader.isStartElement() && reader.name() == "state"))
+    if (!(reader.isStartElement() && reader.name() == "settings"))
         return false;
 
     while (!reader.atEnd())
