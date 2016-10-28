@@ -120,7 +120,7 @@ void MainWindow::updateTimeDisplay()
     static const int millisecondsPerSecond = 1000;
 
     int remainingTime = _puzzleTimer.remainingTime() / millisecondsPerSecond;
-    QString timeString = QString("<p style='font-size:60px; font-family:verdana'><b>Залишилося часу: %0</b></p>").arg(remainingTime);
+    QString timeString = QString("<p>Залишилося часу: %0</p>").arg(remainingTime);
     _remainingTimeWidget->setText(timeString);
 
     int greenChanel = 50;
@@ -249,6 +249,12 @@ void MainWindow::setupWidgets()
             this, SLOT(setCompleted()), Qt::QueuedConnection);
 
     _remainingTimeWidget = new QLabel;
+
+    QFont labelFont = _remainingTimeWidget->font();
+    labelFont.setPixelSize(availableScreenSize.height() / 20);
+    labelFont.setBold(true);
+    labelFont.setFamily("Verdana");
+    _remainingTimeWidget->setFont(labelFont);
 
     QHBoxLayout *remaininTimeLayout = new QHBoxLayout;
     remaininTimeLayout->addSpacing(100);
