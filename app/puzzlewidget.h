@@ -10,6 +10,7 @@ QT_BEGIN_NAMESPACE
 class QDragEnterEvent;
 class QDropEvent;
 class QMouseEvent;
+class QString;
 QT_END_NAMESPACE
 
 class PuzzleWidget : public QWidget
@@ -22,6 +23,8 @@ public:
 
     QSize pieceSize() const;
     QSize imageSize() const;
+
+    void setBackgroundImage(const QString &imagePath);
 
 signals:
     void puzzleCompleted();
@@ -44,6 +47,8 @@ private:
     QList<QPoint> _pieceLocations;
     QList<QPixmap> _piecePixmaps;
     QRect _highlightedRect;
+
+    QString _backgroundImagePath;
 
     int _piecesInRow;
     int _piecesInColumn;

@@ -166,21 +166,25 @@ void PuzzleWidget::mousePressEvent(QMouseEvent *event)
 
 void PuzzleWidget::paintEvent(QPaintEvent *event)
 {
+    Q_UNUSED(event);
+
     QPainter painter;
     painter.begin(this);
-//    painter.fillRect(event->rect(), Qt::lightGray);
 
-    QString bgImageName = "puzzle_background.jpg";
-    QString bgImagePath = QApplication::applicationDirPath()
-            + "/images/" + bgImageName;
-
-    QRect widgetRect = event->rect();
-    QPixmap backgroundImage(bgImagePath);
-    backgroundImage = backgroundImage.scaled(widgetRect.width(),
-                                             widgetRect.height(),
-                                             Qt::IgnoreAspectRatio,
-                                             Qt::SmoothTransformation);
-    painter.fillRect(event->rect(), QBrush(backgroundImage));
+    QRect widgetRect = rect();
+    if (_backgroundImagePath.isEmpty())
+    {
+        painter.fillRect(widgetRect, Qt::lightGray);
+    }
+    else
+    {
+        QPixmap backgroundImage(_backgroundImagePath);
+        backgroundImage = backgroundImage.scaled(widgetRect.width(),
+                                                 widgetRect.height(),
+                                                 Qt::IgnoreAspectRatio,
+                                                 Qt::SmoothTransformation);
+        painter.fillRect(widgetRect, QBrush(backgroundImage));
+    }
 
     if (_highlightedRect.isValid())
     {
@@ -204,6 +208,11 @@ const QRect PuzzleWidget::targetSquare(const QPoint &position) const
                  position.y() / pieceHeight * pieceHeight,
                  pieceWidth,
                  pieceHeight);
+}
+
+void PuzzleWidget::setBackgroundImage(const QString &imagePath)
+{
+    _backgroundImagePath = imagePath;
 }
 
 QSize PuzzleWidget::pieceSize() const

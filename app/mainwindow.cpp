@@ -20,6 +20,7 @@
 
 QString MainWindow::settingsFilePath = "";
 QString MainWindow::soundsDirPath = "";
+QString MainWindow::imagesDirPath = "";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -37,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     settingsFilePath = QApplication::applicationDirPath() + "/config.xml";
     soundsDirPath = QApplication::applicationDirPath() + "/sounds/";
+    imagesDirPath = QApplication::applicationDirPath() + "/images/";
 
     loadSettingsFromFile();
 
@@ -47,6 +49,10 @@ MainWindow::MainWindow(QWidget *parent)
     initSoundPlayer();
 
     initTestpointsController();
+
+    QString imageName = "puzzle_image.jpg";
+    QString imagePath = imagesDirPath + imageName;
+    openImage(imagePath);
 }
 
 MainWindow::~MainWindow()
@@ -471,6 +477,9 @@ void MainWindow::setupPuzzleWidget()
                                      QSize(imageWidth, imageHeight));
 
     //TODO: Pass image path to constructor or some method of PuzzleWidget class
+    QString backgroundImageName = "puzzle_background.jpg";
+    QString backgroundImagePath = imagesDirPath + backgroundImageName;
+    _puzzleWidget->setBackgroundImage(backgroundImagePath);
 
     connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
             this, SLOT(reactWhenPuzzleIsCompleted()), Qt::QueuedConnection);

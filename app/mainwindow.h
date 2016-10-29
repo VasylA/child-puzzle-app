@@ -82,6 +82,7 @@ private:
 private:
     static QString settingsFilePath;
     static QString soundsDirPath;
+    static QString imagesDirPath;
 
     GameStatus _gameStatus;
 
