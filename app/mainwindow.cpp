@@ -145,7 +145,8 @@ void MainWindow::reactIfLaserPassed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus == GS_LaserPassed)
+    if ( (_gameStatus != GS_InitialLocked) &&
+         (_gameStatus != GS_LaserFailed) )
         return;
 
     if (_stackedWidget->currentWidget() != _gameFrame)
@@ -176,7 +177,7 @@ void MainWindow::reactIfLaserFailed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus == GS_LaserFailed)
+    if (_gameStatus != GS_InitialLocked)
         return;
 
     if (_stackedWidget->currentWidget() != _gameFrame)
@@ -207,7 +208,7 @@ void MainWindow::reactOnTouchIfLaserPassed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus <= GS_TouchAndLaserPassed)
+    if (_gameStatus != GS_LaserPassed)
         return;
 
     _testpointsController->blockSignals(true);
@@ -243,7 +244,7 @@ void MainWindow::reactOnTouchIfLaserFailed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus <= GS_TouchAndLaserFailed)
+    if (_gameStatus != GS_LaserFailed)
         return;
 
     _testpointsController->blockSignals(true);
@@ -279,7 +280,8 @@ void MainWindow::reactWhenPuzzleIsCompleted()
 {
     //TODO: Update this if required
 
-    if (_gameStatus <= GS_PuzzleCompleted)
+    if ( (_gameStatus != GS_TouchAndLaserFailed) &&
+         (_gameStatus != GS_TouchAndLaserPassed) )
         return;
 
     _gameStatus = GS_PuzzleCompleted;
@@ -306,7 +308,8 @@ void MainWindow::notifyGameOver()
 {
     //TODO: Update this if required
 
-    if (_gameStatus <= GS_PuzzleTimeIsUp)
+    if ( (_gameStatus != GS_TouchAndLaserFailed) &&
+         (_gameStatus != GS_TouchAndLaserPassed) )
         return;
 
     _gameStatus = GS_PuzzleTimeIsUp;
