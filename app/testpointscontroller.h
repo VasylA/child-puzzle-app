@@ -14,6 +14,7 @@ public:
     ~TestpointsController();
 
 public slots:
+    void checkInGpioStatus();
     void resetOutGpiosStatus();
     void sendPuzzleCompeteSignalToOutGpios();
     void sendPuzzleIncompeteSignalToOutGpios();
@@ -25,9 +26,6 @@ signals:
 
 private:
     void initTestpoints();
-
-private slots:
-    void checkInGpioStatus();
 
 private:
     GPIOClass _gpio4;

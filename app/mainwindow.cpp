@@ -84,6 +84,7 @@ void MainWindow::openImage(const QString &path)
         _puzzleImage = newImage;
 
         setInitialAppState();
+        _testpointsController->checkInGpioStatus();
     }
 }
 
@@ -120,6 +121,9 @@ void MainWindow::setInitialAppState()
 {
     //TODO: Update this if required
 
+    if (_gameStatus == GS_InitialLocked)
+        return;
+
     _gameStatus = GS_InitialLocked;
 
     if (_stackedWidget->currentWidget() != _gameFrame)
@@ -131,6 +135,7 @@ void MainWindow::setInitialAppState()
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
+    _testpointsController->blockSignals(false);
     _testpointsController->resetOutGpiosStatus();
 
     setUiLocked(true);
@@ -140,14 +145,14 @@ void MainWindow::reactIfLaserPassed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus != GS_InitialLocked)
-    {
-        if (_stackedWidget->currentWidget() != _gameFrame)
-            _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_gameStatus == GS_LaserPassed)
+        return;
 
-        setupPuzzle();
-        blinkTimeDisplay();
-    }
+    if (_stackedWidget->currentWidget() != _gameFrame)
+        _stackedWidget->setCurrentWidget(_gameFrame);
+
+    setupPuzzle();
+    blinkTimeDisplay();
 
     _gameStatus = GS_LaserPassed;
 
@@ -171,23 +176,23 @@ void MainWindow::reactIfLaserFailed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus != GS_InitialLocked)
-    {
-        if (_stackedWidget->currentWidget() != _gameFrame)
-            _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_gameStatus == GS_LaserFailed)
+        return;
 
-        setupPuzzle();
-        blinkTimeDisplay();
-    }
+    if (_stackedWidget->currentWidget() != _gameFrame)
+        _stackedWidget->setCurrentWidget(_gameFrame);
 
-    _gameStatus = GS_LaserPassed;
+    setupPuzzle();
+    blinkTimeDisplay();
+
+    _gameStatus = GS_LaserFailed;
 
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
     QMediaPlaylist *playlist = new QMediaPlaylist;
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser_fail.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::CurrentItemOnce);
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
     playlist->setCurrentIndex(0);   //TODO: Check if index is valid
 
     _soundPlayer->setPlaylist(playlist);
@@ -202,14 +207,15 @@ void MainWindow::reactOnTouchIfLaserPassed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus != GS_LaserPassed)
-    {
-        if (_stackedWidget->currentWidget() != _gameFrame)
-            _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_gameStatus <= GS_TouchAndLaserPassed)
+        return;
 
-        setupPuzzle();
-        blinkTimeDisplay();
-    }
+    _testpointsController->blockSignals(true);
+
+    if (_stackedWidget->currentWidget() != _gameFrame)
+        _stackedWidget->setCurrentWidget(_gameFrame);
+
+    setupPuzzle();
 
     _gameStatus = GS_TouchAndLaserPassed;
 
@@ -237,14 +243,16 @@ void MainWindow::reactOnTouchIfLaserFailed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus != GS_LaserFailed)
-    {
-        if (_stackedWidget->currentWidget() != _gameFrame)
-            _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_gameStatus <= GS_TouchAndLaserFailed)
+        return;
 
-        setupPuzzle();
-        blinkTimeDisplay();
-    }
+    _testpointsController->blockSignals(true);
+
+    if (_stackedWidget->currentWidget() != _gameFrame)
+        _stackedWidget->setCurrentWidget(_gameFrame);
+
+    setupPuzzle();
+    blinkTimeDisplay();
 
     _gameStatus = GS_TouchAndLaserFailed;
 
@@ -271,6 +279,9 @@ void MainWindow::reactWhenPuzzleIsCompleted()
 {
     //TODO: Update this if required
 
+    if (_gameStatus <= GS_PuzzleCompleted)
+        return;
+
     _gameStatus = GS_PuzzleCompleted;
 
     _puzzleTimer.stop();
@@ -294,6 +305,9 @@ void MainWindow::reactWhenPuzzleIsCompleted()
 void MainWindow::notifyGameOver()
 {
     //TODO: Update this if required
+
+    if (_gameStatus <= GS_PuzzleTimeIsUp)
+        return;
 
     _gameStatus = GS_PuzzleTimeIsUp;
 
@@ -366,14 +380,17 @@ bool MainWindow::event(QEvent *event)
         {
         case GS_LaserPassed:
             reactOnTouchIfLaserPassed();
+            break;
 
         case GS_LaserFailed:
             reactOnTouchIfLaserFailed();
+            break;
 
         default:
             break;
         }
-        break;
+        setCursor(Qt::BlankCursor);
+        //falldown
 
     default:
         return QWidget::event(event);
@@ -412,6 +429,7 @@ void MainWindow::setupWidgets()
     setAutoFillBackground(true);
     setPalette(colorScheme);
 
+    setCursor(Qt::BlankCursor);
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setWindowState(Qt::WindowFullScreen);
     setWindowTitle(tr("Puzzle"));

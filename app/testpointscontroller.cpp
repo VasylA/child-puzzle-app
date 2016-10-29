@@ -10,10 +10,10 @@ TestpointsController::TestpointsController(QObject *parent)
 
 TestpointsController::~TestpointsController()
 {
-    _gpio4.unexport_gpio();
-    _gpio5.unexport_gpio();
-    _gpio6.unexport_gpio();
-    _gpio17.unexport_gpio();
+//    _gpio4.unexport_gpio();
+//    _gpio5.unexport_gpio();
+//    _gpio6.unexport_gpio();
+//    _gpio17.unexport_gpio();
 }
 
 void TestpointsController::resetOutGpiosStatus()
@@ -48,11 +48,13 @@ void TestpointsController::initTestpoints()
 
     _gpio5.set_gpionum("5");
     _gpio5.export_gpio();
-    _gpio5.setdir_gpio("in");
+    _gpio5.setdir_gpio("out");
+    _gpio5.setval_gpio("0");
 
     _gpio6.set_gpionum("6");
     _gpio6.export_gpio();
-    _gpio6.setdir_gpio("in");
+    _gpio6.setdir_gpio("out");
+    _gpio6.setval_gpio("0");
 }
 
 void TestpointsController::checkInGpioStatus()
