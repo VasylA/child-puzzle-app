@@ -331,7 +331,7 @@ void MainWindow::initSoundPlayer()
 
 void MainWindow::initTestpointsController()
 {
-    _testpointsController = new TestpointsController;
+    _testpointsController = new TestpointsController(this);
 
     connect(_testpointsController, SIGNAL(initialAppStateRequested()), this, SLOT(setInitialAppState()));
     connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));

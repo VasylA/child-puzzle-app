@@ -10,7 +10,7 @@ class TestpointsController : public QObject
     Q_OBJECT
 
 public:
-    TestpointsController();
+    TestpointsController(QObject *parent = 0);
     ~TestpointsController();
 
 public slots:

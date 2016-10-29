@@ -2,11 +2,10 @@
 
 #include <QTimer>
 
-TestpointsController::TestpointsController()
+TestpointsController::TestpointsController(QObject *parent)
+    : QObject(parent)
 {
     initTestpoints();
-
-
 }
 
 TestpointsController::~TestpointsController()
