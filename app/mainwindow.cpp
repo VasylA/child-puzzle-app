@@ -41,21 +41,12 @@ MainWindow::MainWindow(QWidget *parent)
     loadSettingsFromFile();
 
     setupWidgets();
-    _model = new PiecesModel(_settingsContainer.columnCount,
-                             _settingsContainer.rowCount,
-                             _puzzleWidget->pieceSize(),
-                             this);
-    _piecesList->setModel(_model);
 
-    _soundPlayer = new QMediaPlayer(this);
-    _soundPlayer->setVolume(80);
+    initTimer();
 
-    setupTimer();
+    initSoundPlayer();
 
-    _testpointsController = new TestpointsController;
-    connect(_testpointsController, SIGNAL(initialAppStateRequested()), this, SLOT(setInitialAppState()));
-    connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));
-    connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()));
+    initTestpointsController();
 }
 
 MainWindow::~MainWindow()
@@ -86,32 +77,8 @@ void MainWindow::openImage(const QString &path)
         }
         _puzzleImage = newImage;
 
-        resetPuzzle();
+        setInitialAppState();
     }
-}
-
-void MainWindow::reactWhenPuzzleIsCompleted()
-{
-    //TODO: Update this if required
-
-    _gameStatus = GS_PuzzleCompleted;
-
-    _puzzleTimer.stop();
-    _soundPlayer->stop();
-
-    _stackedWidget->setCurrentWidget(_winFrame);
-
-    QMediaPlaylist *playlist = new QMediaPlaylist;
-    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_pass.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
-
-    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleCompeteSignalToOutGpios()));
-
-    _soundPlayer->setPlaylist(playlist);
-    _soundPlayer->play();
-
-    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
 }
 
 void MainWindow::blinkTimeDisplay()
@@ -294,12 +261,75 @@ void MainWindow::reactOnTouchIfLaserFailed()
     updateTimeDisplay();
 }
 
-void MainWindow::setupTimer()
+void MainWindow::reactWhenPuzzleIsCompleted()
+{
+    //TODO: Update this if required
+
+    _gameStatus = GS_PuzzleCompleted;
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    _stackedWidget->setCurrentWidget(_winFrame);
+
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_pass.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleCompeteSignalToOutGpios()));
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
+}
+
+void MainWindow::notifyGameOver()
+{
+    //TODO: Update this if required
+
+    _gameStatus = GS_PuzzleTimeIsUp;
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    _stackedWidget->setCurrentWidget(_loseFrame);
+
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_fail.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleIncompeteSignalToOutGpios()));
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
+}
+
+void MainWindow::initTimer()
 {
     _puzzleTimer.setInterval(_settingsContainer.gameTimerPeriod);
     _puzzleTimer.setSingleShot(false);
 
     connect(&_puzzleTimer, SIGNAL(timeout()), SLOT(notifyGameOver()));
+}
+
+void MainWindow::initSoundPlayer()
+{
+    _soundPlayer = new QMediaPlayer(this);
+    _soundPlayer->setVolume(80);
+}
+
+void MainWindow::initTestpointsController()
+{
+    _testpointsController = new TestpointsController;
+
+    connect(_testpointsController, SIGNAL(initialAppStateRequested()), this, SLOT(setInitialAppState()));
+    connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));
+    connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()));
 }
 
 void MainWindow::setupPuzzle()
@@ -345,49 +375,91 @@ bool MainWindow::event(QEvent *event)
     return true;
 }
 
-void MainWindow::notifyGameOver()
+void MainWindow::setupWidgets()
+{
+    //NOTE: Setup puzzle widget before puzzle source (_piecesList)
+    setupPuzzleWidget();
+    setupPuzzleSource();
+
+    setupTimeWidget();
+
+    setupGameFrames();
+
+    _stackedWidget = new QStackedWidget;
+    _stackedWidget->addWidget(_gameFrame);
+    _stackedWidget->addWidget(_loseFrame);
+    _stackedWidget->addWidget(_winFrame);
+
+    setCentralWidget(_stackedWidget);
+
+    QLinearGradient bgGradient;
+    bgGradient.setStart(0, 0);
+    bgGradient.setFinalStop(0, 1);
+    bgGradient.setColorAt(0.0, QColor(120, 230, 180));
+    bgGradient.setColorAt(0.2, QColor(120, 180, 180));
+    bgGradient.setColorAt(1.0, QColor(120, 180, 120));
+    bgGradient.setCoordinateMode(QGradient::StretchToDeviceMode);
+
+    QPalette colorScheme(palette());
+    colorScheme.setBrush(QPalette::Background, bgGradient);
+
+    setAutoFillBackground(true);
+    setPalette(colorScheme);
+
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    setWindowState(Qt::WindowFullScreen);
+    setWindowTitle(tr("Puzzle"));
+}
+
+void MainWindow::setupGameFrames()
 {
     //TODO: Update this if required
 
-    _gameStatus = GS_PuzzleTimeIsUp;
+    QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
-    _puzzleTimer.stop();
-    _soundPlayer->stop();
+    QHBoxLayout *remaininTimeLayout = new QHBoxLayout;
+    remaininTimeLayout->addSpacing(availableScreenSize.width() / 8);
+    remaininTimeLayout->addWidget(_remainingTimeWidget);
 
-    _stackedWidget->setCurrentWidget(_loseFrame);
+    QVBoxLayout *rightLayout = new QVBoxLayout;
+    rightLayout->addLayout(remaininTimeLayout);
+    rightLayout->addWidget(_puzzleWidget);
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
-    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_fail.mp3"));
-    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    _gameFrame = new QFrame;
+    QHBoxLayout *gameLayout = new QHBoxLayout(_gameFrame);
+    gameLayout->addLayout(rightLayout);
+    gameLayout->addWidget(_piecesList);
 
-    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleIncompeteSignalToOutGpios()));
+    const int TEXT_PIXEL_SIZE = availableScreenSize.height() / 5;
 
-    _soundPlayer->setPlaylist(playlist);
-    _soundPlayer->play();
+    _winFrame = new AccessGrantedWidget;
+    _winFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _winFrame->setTextSize(TEXT_PIXEL_SIZE);
 
-    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
+    _loseFrame = new AccessDeniedWidget;
+    _loseFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _loseFrame->setTextSize(TEXT_PIXEL_SIZE);
 }
 
-void MainWindow::resetPuzzle()
+void MainWindow::setupTimeWidget()
 {
-    _puzzleTimer.stop();
+    //TODO: Update this if required
 
-    _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile(soundsDirPath + "clock.mp3"));
-    _soundPlayer->play();
+    _remainingTimeWidget = new QLabel;
 
-    _testpointsController->resetOutGpiosStatus();
+    QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
-    setupPuzzle();
-    _stackedWidget->setCurrentWidget(_gameFrame);
-
-    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
-    updateTimeDisplay();
+    QFont labelFont = _remainingTimeWidget->font();
+    labelFont.setPixelSize(availableScreenSize.height() / 20);
+    labelFont.setBold(true);
+    labelFont.setFamily("Verdana");
+    _remainingTimeWidget->setFont(labelFont);
 }
 
-void MainWindow::setupWidgets()
+void MainWindow::setupPuzzleWidget()
 {
+    //TODO: Update this if required
+
     const double margins = 10;
     QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
@@ -398,15 +470,17 @@ void MainWindow::setupWidgets()
                                      _settingsContainer.columnCount,
                                      QSize(imageWidth, imageHeight));
 
-	//TODO: Pass image path to construcotr or some method of PuzzleWidget class
-//    QString bgImageName = "puzzle_background.jpg";
-//    QString bgImagePath = QApplication::applicationDirPath()
-//            + "/images/" + bgImageName;
+    //TODO: Pass image path to constructor or some method of PuzzleWidget class
 
-//    QPalette puzzleWidgetPalette = _puzzleWidget->palette();
-//    puzzleWidgetPalette.setBrush(QPalette::Window, QBrush(QPixmap(bgImagePath)));
-//    _puzzleWidget->setAutoFillBackground(true);
-//    _puzzleWidget->setPalette(puzzleWidgetPalette);
+    connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
+            this, SLOT(reactWhenPuzzleIsCompleted()), Qt::QueuedConnection);
+}
+
+void MainWindow::setupPuzzleSource()
+{
+    //TODO: Update this if required
+
+    QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
     double gridWidth = 0.2 * availableScreenSize.width();
     double iconWidth = 0.9 * gridWidth;
@@ -430,86 +504,16 @@ void MainWindow::setupWidgets()
     _piecesList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     _piecesList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    PiecesModel *model = new PiecesModel(_settingsContainer.columnCount,
-                                         _settingsContainer.rowCount,
-                                         _puzzleWidget->pieceSize(),
-                                         this);
-    _piecesList->setModel(model);
+    _model = new PiecesModel(_settingsContainer.columnCount,
+                             _settingsContainer.rowCount,
+                             _puzzleWidget->pieceSize(),
+                             this);
+    _piecesList->setModel(_model);
 
     QPalette puzzleSourcePalette = _piecesList->palette();
     puzzleSourcePalette.setBrush(QPalette::Base, Qt::lightGray);
     _piecesList->setAutoFillBackground(true);
     _piecesList->setPalette(puzzleSourcePalette);
-
-
-    connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
-            this, SLOT(reactWhenPuzzleIsCompleted()), Qt::QueuedConnection);
-
-    _remainingTimeWidget = new QLabel;
-
-    QFont labelFont = _remainingTimeWidget->font();
-    labelFont.setPixelSize(availableScreenSize.height() / 20);
-    labelFont.setBold(true);
-    labelFont.setFamily("Verdana");
-    _remainingTimeWidget->setFont(labelFont);
-
-    QHBoxLayout *remaininTimeLayout = new QHBoxLayout;
-    remaininTimeLayout->addSpacing(100);
-    remaininTimeLayout->addWidget(_remainingTimeWidget);
-
-    QVBoxLayout *rightLayout = new QVBoxLayout;
-    rightLayout->addLayout(remaininTimeLayout);
-    rightLayout->addWidget(_puzzleWidget);
-
-    _gameFrame = new QFrame;
-    QHBoxLayout *gameLayout = new QHBoxLayout(_gameFrame);
-    gameLayout->addLayout(rightLayout);
-    gameLayout->addWidget(_piecesList);
-
-
-    _winFrame = new AccessGrantedWidget;
-    _winFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    _winFrame->setTextSize(TEXT_PIXEL_SIZE);
-
-    _loseFrame = new AccessDeniedWidget;
-    _loseFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    _loseFrame->setTextSize(TEXT_PIXEL_SIZE);
-
-    _stackedWidget = new QStackedWidget;
-    _stackedWidget->addWidget(_gameFrame);
-    _stackedWidget->addWidget(_loseFrame);
-    _stackedWidget->addWidget(_winFrame);
-
-    setCentralWidget(_stackedWidget);
-
-
-    QLinearGradient bgGradient;
-    bgGradient.setStart(0, 0);
-    bgGradient.setFinalStop(0, 1);
-    bgGradient.setColorAt(0.0, QColor(120, 230, 180));
-    bgGradient.setColorAt(0.2, QColor(120, 180, 180));
-    bgGradient.setColorAt(1.0, QColor(120, 180, 120));
-    bgGradient.setCoordinateMode(QGradient::StretchToDeviceMode);
-
-    QPalette colorScheme(palette());
-    colorScheme.setBrush(QPalette::Background, bgGradient);
-
-    setAutoFillBackground(true);
-    setPalette(colorScheme);
-
-    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    setWindowState(Qt::WindowFullScreen);
-    setWindowTitle(tr("Puzzle"));
-}
-
-void MainWindow::setupGameFrame()
-{
-    //TODO: Implenent this
-}
-
-void MainWindow::setupPuzzleSource()
-{
-    //TODO: Implenent this
 }
 
 void MainWindow::loadSettingsFromFile()

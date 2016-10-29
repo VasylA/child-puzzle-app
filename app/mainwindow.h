@@ -52,7 +52,6 @@ protected:
 
 
 private slots:
-    void resetPuzzle();
     void blinkTimeDisplay();
     void updateTimeDisplay();
 
@@ -66,10 +65,16 @@ private slots:
     void notifyGameOver();
 
 private:
-    void setupTimer();
+    void initTimer();
+    void initSoundPlayer();
+    void initTestpointsController();
+
     void setupWidgets();
-    void setupGameFrame();
+    void setupGameFrames();
+    void setupTimeWidget();
+    void setupPuzzleWidget();
     void setupPuzzleSource();
+
     void loadSettingsFromFile();
 
     void setUiLocked(bool locked);
@@ -77,8 +82,6 @@ private:
 private:
     static QString settingsFilePath;
     static QString soundsDirPath;
-
-    static const int TEXT_PIXEL_SIZE = 120;
 
     GameStatus _gameStatus;
 
