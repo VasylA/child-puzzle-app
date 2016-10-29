@@ -13,16 +13,15 @@ public:
     TestpointsController();
     ~TestpointsController();
 
+public slots:
     void resetOutGpiosStatus();
     void sendPuzzleCompeteSignalToOutGpios();
     void sendPuzzleIncompeteSignalToOutGpios();
 
 signals:
-    void appFreezeRequested();
-
-    // TODO: Rename next two signals
-    void signal1();
-    void signal2();
+    void initialAppStateRequested();
+    void laserPassed();
+    void laserFailed();
 
 private:
     void initTestpoints();
