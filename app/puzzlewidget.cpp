@@ -168,7 +168,19 @@ void PuzzleWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter;
     painter.begin(this);
-    painter.fillRect(event->rect(), Qt::lightGray);
+//    painter.fillRect(event->rect(), Qt::lightGray);
+
+    QString bgImageName = "puzzle_background.jpg";
+    QString bgImagePath = QApplication::applicationDirPath()
+            + "/images/" + bgImageName;
+
+    QRect widgetRect = event->rect();
+    QPixmap backgroundImage(bgImagePath);
+    backgroundImage = backgroundImage.scaled(widgetRect.width(),
+                                             widgetRect.height(),
+                                             Qt::IgnoreAspectRatio,
+                                             Qt::SmoothTransformation);
+    painter.fillRect(event->rect(), QBrush(backgroundImage));
 
     if (_highlightedRect.isValid())
     {

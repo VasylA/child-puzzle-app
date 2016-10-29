@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     _piecesList->setModel(_model);
 
     _soundPlayer = new QMediaPlayer(this);
-    _soundPlayer->setVolume(100);
+    _soundPlayer->setVolume(80);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setWindowState(Qt::WindowFullScreen);
@@ -57,8 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
     _testpointsController = new TestpointsController;
     connect(_testpointsController, SIGNAL(appFreezeRequested()), this, SLOT(freezeApplication()));
     //TODO: Update reaction on next signals
-    connect(_testpointsController, SIGNAL(signal1()), this, SLOT(reaction1()));
-    connect(_testpointsController, SIGNAL(signal2()), this, SLOT(reaction2()));
+//    connect(_testpointsController, SIGNAL(signal1()), this, SLOT(reaction1()));
+//    connect(_testpointsController, SIGNAL(signal2()), this, SLOT(reaction2()));
 }
 
 MainWindow::~MainWindow()
@@ -210,6 +210,16 @@ void MainWindow::setupWidgets()
     _puzzleWidget = new PuzzleWidget(_settingsContainer.rowCount,
                                      _settingsContainer.columnCount,
                                      QSize(imageWidth, imageHeight));
+
+	//TODO: Pass image path to construcotr or some method of PuzzleWidget class
+//    QString bgImageName = "puzzle_background.jpg";
+//    QString bgImagePath = QApplication::applicationDirPath()
+//            + "/images/" + bgImageName;
+
+//    QPalette puzzleWidgetPalette = _puzzleWidget->palette();
+//    puzzleWidgetPalette.setBrush(QPalette::Window, QBrush(QPixmap(bgImagePath)));
+//    _puzzleWidget->setAutoFillBackground(true);
+//    _puzzleWidget->setPalette(puzzleWidgetPalette);
 
     double gridWidth = 0.2 * availableScreenSize.width();
     double iconWidth = 0.9 * gridWidth;
