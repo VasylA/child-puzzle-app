@@ -14,6 +14,7 @@
 #include <QLinearGradient>
 
 #include <QtMultimedia/QMediaPlayer>
+#include <QtMultimedia/QMediaPlaylist>
 
 #include <stdlib.h>
 
@@ -22,6 +23,7 @@ QString MainWindow::soundsDirPath = "";
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
+      _gameStatus(GS_InitialLocked),
       _piecesList(nullptr),
       _puzzleWidget(nullptr),
       _model(nullptr),
@@ -48,22 +50,17 @@ MainWindow::MainWindow(QWidget *parent)
     _soundPlayer = new QMediaPlayer(this);
     _soundPlayer->setVolume(80);
 
-    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    setWindowState(Qt::WindowFullScreen);
-    setWindowTitle(tr("Puzzle"));
-
     setupTimer();
 
     _testpointsController = new TestpointsController;
-    connect(_testpointsController, SIGNAL(appFreezeRequested()), this, SLOT(freezeApplication()));
-    //TODO: Update reaction on next signals
-//    connect(_testpointsController, SIGNAL(signal1()), this, SLOT(reaction1()));
-//    connect(_testpointsController, SIGNAL(signal2()), this, SLOT(reaction2()));
+    connect(_testpointsController, SIGNAL(initialAppStateRequested()), this, SLOT(setInitialAppState()));
+    connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));
+    connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()));
 }
 
 MainWindow::~MainWindow()
 {
-    resetPuzzle();
+    setInitialAppState();
 }
 
 void MainWindow::openImage(const QString &path)
@@ -93,19 +90,28 @@ void MainWindow::openImage(const QString &path)
     }
 }
 
-void MainWindow::setCompleted()
+void MainWindow::reactWhenPuzzleIsCompleted()
 {
+    //TODO: Update this if required
+
+    _gameStatus = GS_PuzzleCompleted;
+
     _puzzleTimer.stop();
-
-    _testpointsController->sendPuzzleCompeteSignalToOutGpios();
-
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_pass.mp3"));
-    _soundPlayer->play();
 
     _stackedWidget->setCurrentWidget(_winFrame);
 
-    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(resetPuzzle()));
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_pass.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleCompeteSignalToOutGpios()));
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
 }
 
 void MainWindow::blinkTimeDisplay()
@@ -137,9 +143,155 @@ void MainWindow::updateTimeDisplay()
         QTimer::singleShot(500, this, SLOT(blinkTimeDisplay()));
 }
 
-void MainWindow::freezeApplication()
+void MainWindow::setInitialAppState()
 {
-    //TODO: Implenent this
+    //TODO: Update this if required
+
+    _gameStatus = GS_InitialLocked;
+
+    if (_stackedWidget->currentWidget() != _gameFrame)
+        _stackedWidget->setCurrentWidget(_gameFrame);
+
+    setupPuzzle();
+    blinkTimeDisplay();
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    _testpointsController->resetOutGpiosStatus();
+
+    setUiLocked(true);
+}
+
+void MainWindow::reactIfLaserPassed()
+{
+    //TODO: Update this if required
+
+    if (_gameStatus != GS_InitialLocked)
+    {
+        if (_stackedWidget->currentWidget() != _gameFrame)
+            _stackedWidget->setCurrentWidget(_gameFrame);
+
+        setupPuzzle();
+        blinkTimeDisplay();
+    }
+
+    _gameStatus = GS_LaserPassed;
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Loop);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    _testpointsController->resetOutGpiosStatus();
+
+    setUiLocked(false);
+}
+
+void MainWindow::reactIfLaserFailed()
+{
+    //TODO: Update this if required
+
+    if (_gameStatus != GS_InitialLocked)
+    {
+        if (_stackedWidget->currentWidget() != _gameFrame)
+            _stackedWidget->setCurrentWidget(_gameFrame);
+
+        setupPuzzle();
+        blinkTimeDisplay();
+    }
+
+    _gameStatus = GS_LaserPassed;
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser_fail.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::CurrentItemOnce);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    _testpointsController->resetOutGpiosStatus();
+
+    setUiLocked(false);
+}
+
+void MainWindow::reactOnTouchIfLaserPassed()
+{
+    //TODO: Update this if required
+
+    if (_gameStatus != GS_LaserPassed)
+    {
+        if (_stackedWidget->currentWidget() != _gameFrame)
+            _stackedWidget->setCurrentWidget(_gameFrame);
+
+        setupPuzzle();
+        blinkTimeDisplay();
+    }
+
+    _gameStatus = GS_TouchAndLaserPassed;
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser_pass.mp3"));
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "clock.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    _testpointsController->resetOutGpiosStatus();
+
+    setUiLocked(false);
+
+    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
+    updateTimeDisplay();
+}
+
+void MainWindow::reactOnTouchIfLaserFailed()
+{
+    //TODO: Update this if required
+
+    if (_gameStatus != GS_LaserFailed)
+    {
+        if (_stackedWidget->currentWidget() != _gameFrame)
+            _stackedWidget->setCurrentWidget(_gameFrame);
+
+        setupPuzzle();
+        blinkTimeDisplay();
+    }
+
+    _gameStatus = GS_TouchAndLaserFailed;
+
+    _puzzleTimer.stop();
+    _soundPlayer->stop();
+
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "clock.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    _testpointsController->resetOutGpiosStatus();
+
+    setUiLocked(false);
+
+    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
+    updateTimeDisplay();
 }
 
 void MainWindow::setupTimer()
@@ -147,7 +299,7 @@ void MainWindow::setupTimer()
     _puzzleTimer.setInterval(_settingsContainer.gameTimerPeriod);
     _puzzleTimer.setSingleShot(false);
 
-    connect(&_puzzleTimer, SIGNAL(timeout()), SLOT(gameOver()));
+    connect(&_puzzleTimer, SIGNAL(timeout()), SLOT(notifyGameOver()));
 }
 
 void MainWindow::setupPuzzle()
@@ -167,19 +319,54 @@ void MainWindow::setupPuzzle()
     _puzzleWidget->clear();
 }
 
-void MainWindow::gameOver()
+bool MainWindow::event(QEvent *event)
 {
+    switch (event->type())
+    {
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        switch (_gameStatus )
+        {
+        case GS_LaserPassed:
+            reactOnTouchIfLaserPassed();
+
+        case GS_LaserFailed:
+            reactOnTouchIfLaserFailed();
+
+        default:
+            break;
+        }
+        break;
+
+    default:
+        return QWidget::event(event);
+    }
+    return true;
+}
+
+void MainWindow::notifyGameOver()
+{
+    //TODO: Update this if required
+
+    _gameStatus = GS_PuzzleTimeIsUp;
+
     _puzzleTimer.stop();
-
-    _testpointsController->sendPuzzleIncompeteSignalToOutGpios();
-
     _soundPlayer->stop();
-    _soundPlayer->setMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_fail.mp3"));
-    _soundPlayer->play();
 
     _stackedWidget->setCurrentWidget(_loseFrame);
 
-    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(resetPuzzle()));
+    QMediaPlaylist *playlist = new QMediaPlaylist;
+    playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_fail.mp3"));
+    playlist->setPlaybackMode(QMediaPlaylist::Sequential);
+    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+
+    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleIncompeteSignalToOutGpios()));
+
+    _soundPlayer->setPlaylist(playlist);
+    _soundPlayer->play();
+
+    QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
 }
 
 void MainWindow::resetPuzzle()
@@ -256,7 +443,7 @@ void MainWindow::setupWidgets()
 
 
     connect(_puzzleWidget, SIGNAL(puzzleCompleted()),
-            this, SLOT(setCompleted()), Qt::QueuedConnection);
+            this, SLOT(reactWhenPuzzleIsCompleted()), Qt::QueuedConnection);
 
     _remainingTimeWidget = new QLabel;
 
@@ -309,6 +496,10 @@ void MainWindow::setupWidgets()
 
     setAutoFillBackground(true);
     setPalette(colorScheme);
+
+    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+    setWindowState(Qt::WindowFullScreen);
+    setWindowTitle(tr("Puzzle"));
 }
 
 void MainWindow::setupGameFrame()
@@ -326,4 +517,11 @@ void MainWindow::loadSettingsFromFile()
     SettingsManager gameSettingsManager;
     if (gameSettingsManager.loadSettings(settingsFilePath))
         _settingsContainer = gameSettingsManager.settings();
+}
+
+void MainWindow::setUiLocked(bool locked)
+{
+    setAttribute(Qt::WA_AcceptTouchEvents, !locked);
+    setAttribute(Qt::WA_StaticContents, !locked);
+    setDisabled(locked);
 }
