@@ -8,6 +8,7 @@ HEADERS     = mainwindow.h \
               piecesmodel.h \
               puzzlewidget.h \
               testpointscontroller.h \
+              startpuzzlewidget.h \
               accessgrantedwidget.h \
               accessdeniedwidget.h \
               settingscontainer.h \
@@ -21,6 +22,7 @@ SOURCES     = main.cpp \
               piecesmodel.cpp \
               puzzlewidget.cpp \
               testpointscontroller.cpp \
+              startpuzzlewidget.cpp \
               accessgrantedwidget.cpp \
               accessdeniedwidget.cpp \
               settingsmanager.cpp

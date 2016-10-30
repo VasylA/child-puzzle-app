@@ -2,6 +2,7 @@
 #include "piecesmodel.h"
 #include "puzzlewidget.h"
 
+#include "startpuzzlewidget.h"
 #include "accessgrantedwidget.h"
 #include "accessdeniedwidget.h"
 
@@ -149,8 +150,8 @@ void MainWindow::setInitialAppState()
 
     _gameStatus = GS_InitialLocked;
 
-    if (_stackedWidget->currentWidget() != _gameFrame)
-        _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_stackedWidget->currentWidget() != _startFrame)
+        _stackedWidget->setCurrentWidget(_startFrame);
 
     setupPuzzle();
     blinkTimeDisplay();
@@ -173,8 +174,8 @@ void MainWindow::reactIfLaserPassed()
     if (_gameStatus != GS_InitialLocked)
         return;
 
-    if (_stackedWidget->currentWidget() != _gameFrame)
-        _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_stackedWidget->currentWidget() != _startFrame)
+        _stackedWidget->setCurrentWidget(_startFrame);
 
     setupPuzzle();
     blinkTimeDisplay();
@@ -206,8 +207,8 @@ void MainWindow::reactIfLaserFailed()
          (_gameStatus != GS_LaserPassed) )
         return;
 
-    if (_stackedWidget->currentWidget() != _gameFrame)
-        _stackedWidget->setCurrentWidget(_gameFrame);
+    if (_stackedWidget->currentWidget() != _startFrame)
+        _stackedWidget->setCurrentWidget(_startFrame);
 
     setupPuzzle();
     blinkTimeDisplay();
@@ -438,6 +439,7 @@ void MainWindow::setupWidgets()
     setupGameFrames();
 
     _stackedWidget = new QStackedWidget;
+    _stackedWidget->addWidget(_startFrame);
     _stackedWidget->addWidget(_gameFrame);
     _stackedWidget->addWidget(_loseFrame);
     _stackedWidget->addWidget(_winFrame);
@@ -484,6 +486,10 @@ void MainWindow::setupGameFrames()
     gameLayout->addWidget(_piecesList);
 
     const int TEXT_PIXEL_SIZE = availableScreenSize.height() / 5;
+
+    _startFrame = new StartPuzzleWidget;
+    _startFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    _startFrame->setTextSize(TEXT_PIXEL_SIZE);
 
     _winFrame = new AccessGrantedWidget;
     _winFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

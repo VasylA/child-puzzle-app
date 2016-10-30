@@ -9,6 +9,7 @@
 
 class PuzzleWidget;
 class PiecesModel;
+class StartPuzzleWidget;
 class AccessGrantedWidget;
 class AccessDeniedWidget;
 class TestpointsController;
@@ -93,6 +94,8 @@ private:
     PiecesModel *_model;
 
     QFrame *_gameFrame;
+
+    StartPuzzleWidget *_startFrame;
     AccessDeniedWidget *_loseFrame;
     AccessGrantedWidget *_winFrame;
     QStackedWidget *_stackedWidget;
