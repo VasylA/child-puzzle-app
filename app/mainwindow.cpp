@@ -143,8 +143,6 @@ void MainWindow::reactOnMediaStateChange()
 
 void MainWindow::setInitialAppState()
 {
-    //TODO: Update this if required
-
     if (_gameStatus == GS_InitialLocked)
         return;
 
@@ -153,8 +151,7 @@ void MainWindow::setInitialAppState()
     if (_stackedWidget->currentWidget() != _startFrame)
         _stackedWidget->setCurrentWidget(_startFrame);
 
-    setupPuzzle();
-    blinkTimeDisplay();
+    _puzzleWidget->clear();
 
     _puzzleTimer.stop();
     _soundPlayer->stop();
@@ -169,26 +166,21 @@ void MainWindow::setInitialAppState()
 
 void MainWindow::reactIfLaserPassed()
 {
-    //TODO: Update this if required
-
     if (_gameStatus != GS_InitialLocked)
         return;
 
     if (_stackedWidget->currentWidget() != _startFrame)
         _stackedWidget->setCurrentWidget(_startFrame);
 
-    setupPuzzle();
-    blinkTimeDisplay();
-
     _gameStatus = GS_LaserPassed;
 
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
+    QMediaPlaylist *playlist = new QMediaPlaylist(_soundPlayer);
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser.mp3"));
     playlist->setPlaybackMode(QMediaPlaylist::Loop);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    playlist->setCurrentIndex(0);
 
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
@@ -200,9 +192,6 @@ void MainWindow::reactIfLaserPassed()
 
 void MainWindow::reactIfLaserFailed()
 {
-    //TODO: Update this if required
-
-
     if ( (_gameStatus != GS_InitialLocked) &&
          (_gameStatus != GS_LaserPassed) )
         return;
@@ -210,18 +199,15 @@ void MainWindow::reactIfLaserFailed()
     if (_stackedWidget->currentWidget() != _startFrame)
         _stackedWidget->setCurrentWidget(_startFrame);
 
-    setupPuzzle();
-    blinkTimeDisplay();
-
     _gameStatus = GS_LaserFailed;
 
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
+    QMediaPlaylist *playlist = new QMediaPlaylist(_soundPlayer);
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser_fail.mp3"));
     playlist->setPlaybackMode(QMediaPlaylist::Loop);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    playlist->setCurrentIndex(0);
 
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
@@ -233,8 +219,6 @@ void MainWindow::reactIfLaserFailed()
 
 void MainWindow::reactOnTouchIfLaserPassed()
 {
-    //TODO: Update this if required
-
     if (_gameStatus != GS_LaserPassed)
         return;
 
@@ -251,11 +235,11 @@ void MainWindow::reactOnTouchIfLaserPassed()
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
+    QMediaPlaylist *playlist = new QMediaPlaylist(_soundPlayer);
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "laser_pass.mp3"));
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "clock.mp3"));
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    playlist->setCurrentIndex(0);
 
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
@@ -270,8 +254,6 @@ void MainWindow::reactOnTouchIfLaserPassed()
 
 void MainWindow::reactOnTouchIfLaserFailed()
 {
-    //TODO: Update this if required
-
     if (_gameStatus != GS_LaserFailed)
         return;
 
@@ -289,10 +271,10 @@ void MainWindow::reactOnTouchIfLaserFailed()
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
+    QMediaPlaylist *playlist = new QMediaPlaylist(_soundPlayer);
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "clock.mp3"));
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    playlist->setCurrentIndex(0);
 
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
@@ -307,8 +289,6 @@ void MainWindow::reactOnTouchIfLaserFailed()
 
 void MainWindow::reactWhenPuzzleIsCompleted()
 {
-    //TODO: Update this if required
-
     if ( (_gameStatus != GS_TouchAndLaserFailed) &&
          (_gameStatus != GS_TouchAndLaserPassed) )
         return;
@@ -320,10 +300,10 @@ void MainWindow::reactWhenPuzzleIsCompleted()
 
     _stackedWidget->setCurrentWidget(_winFrame);
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
+    QMediaPlaylist *playlist = new QMediaPlaylist(_soundPlayer);
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_pass.mp3"));
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    playlist->setCurrentIndex(0);
 
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
@@ -333,8 +313,6 @@ void MainWindow::reactWhenPuzzleIsCompleted()
 
 void MainWindow::notifyGameOver()
 {
-    //TODO: Update this if required
-
     if ( (_gameStatus != GS_TouchAndLaserFailed) &&
          (_gameStatus != GS_TouchAndLaserPassed) )
         return;
@@ -346,10 +324,10 @@ void MainWindow::notifyGameOver()
 
     _stackedWidget->setCurrentWidget(_loseFrame);
 
-    QMediaPlaylist *playlist = new QMediaPlaylist;
+    QMediaPlaylist *playlist = new QMediaPlaylist(_soundPlayer);
     playlist->addMedia(QUrl::fromLocalFile(soundsDirPath + "puzzle_fail.mp3"));
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
-    playlist->setCurrentIndex(0);   //TODO: Check if index is valid
+    playlist->setCurrentIndex(0);
 
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
