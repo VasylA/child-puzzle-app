@@ -135,7 +135,9 @@ void MainWindow::setInitialAppState()
     _puzzleTimer.stop();
     _soundPlayer->stop();
 
-    _testpointsController->blockSignals(false);
+    connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()), Qt::UniqueConnection);
+    connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()), Qt::UniqueConnection);
+
     _testpointsController->resetOutGpiosStatus();
 
     setUiLocked(true);
@@ -145,8 +147,7 @@ void MainWindow::reactIfLaserPassed()
 {
     //TODO: Update this if required
 
-    if ( (_gameStatus != GS_InitialLocked) &&
-         (_gameStatus != GS_LaserFailed) )
+    if (_gameStatus != GS_InitialLocked)
         return;
 
     if (_stackedWidget->currentWidget() != _gameFrame)
@@ -177,7 +178,9 @@ void MainWindow::reactIfLaserFailed()
 {
     //TODO: Update this if required
 
-    if (_gameStatus != GS_InitialLocked)
+
+    if ( (_gameStatus != GS_InitialLocked) &&
+         (_gameStatus != GS_LaserPassed) )
         return;
 
     if (_stackedWidget->currentWidget() != _gameFrame)
@@ -211,7 +214,8 @@ void MainWindow::reactOnTouchIfLaserPassed()
     if (_gameStatus != GS_LaserPassed)
         return;
 
-    _testpointsController->blockSignals(true);
+    disconnect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));
+    disconnect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()));
 
     if (_stackedWidget->currentWidget() != _gameFrame)
         _stackedWidget->setCurrentWidget(_gameFrame);
@@ -247,7 +251,8 @@ void MainWindow::reactOnTouchIfLaserFailed()
     if (_gameStatus != GS_LaserFailed)
         return;
 
-    _testpointsController->blockSignals(true);
+    disconnect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));
+    disconnect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()));
 
     if (_stackedWidget->currentWidget() != _gameFrame)
         _stackedWidget->setCurrentWidget(_gameFrame);
@@ -351,8 +356,8 @@ void MainWindow::initTestpointsController()
     _testpointsController = new TestpointsController(this);
 
     connect(_testpointsController, SIGNAL(initialAppStateRequested()), this, SLOT(setInitialAppState()));
-    connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()));
-    connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()));
+    connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()), Qt::UniqueConnection);
+    connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()), Qt::UniqueConnection);
 }
 
 void MainWindow::setupPuzzle()
