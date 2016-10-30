@@ -117,6 +117,29 @@ void MainWindow::updateTimeDisplay()
         QTimer::singleShot(500, this, SLOT(blinkTimeDisplay()));
 }
 
+void MainWindow::reactOnMediaStateChange()
+{
+    QMediaPlayer::State mediaState = _soundPlayer->state();
+    bool mediaStopped = (mediaState == QMediaPlayer::StoppedState);
+
+    if (!mediaStopped)
+        return;
+
+    switch (_gameStatus)
+    {
+    case GS_PuzzleCompleted:
+        _testpointsController->sendPuzzleCompeteSignalToOutGpios();
+        break;
+
+    case GS_PuzzleTimeIsUp:
+        _testpointsController->sendPuzzleIncompeteSignalToOutGpios();
+        break;
+
+    default:
+        break;
+    }
+}
+
 void MainWindow::setInitialAppState()
 {
     //TODO: Update this if required
@@ -301,8 +324,6 @@ void MainWindow::reactWhenPuzzleIsCompleted()
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
     playlist->setCurrentIndex(0);   //TODO: Check if index is valid
 
-    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleCompeteSignalToOutGpios()));
-
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
 
@@ -329,8 +350,6 @@ void MainWindow::notifyGameOver()
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
     playlist->setCurrentIndex(0);   //TODO: Check if index is valid
 
-    connect(_soundPlayer, SIGNAL(endOfMedia()), _testpointsController, SLOT(sendPuzzleIncompeteSignalToOutGpios()));
-
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
 
@@ -349,6 +368,8 @@ void MainWindow::initSoundPlayer()
 {
     _soundPlayer = new QMediaPlayer(this);
     _soundPlayer->setVolume(80);
+
+    connect(_soundPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(reactOnMediaStateChange()));
 }
 
 void MainWindow::initTestpointsController()

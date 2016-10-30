@@ -54,6 +54,7 @@ protected:
 private slots:
     void blinkTimeDisplay();
     void updateTimeDisplay();
+    void reactOnMediaStateChange();
 
     // Game State slots
     void setInitialAppState();
