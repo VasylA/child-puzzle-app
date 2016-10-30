@@ -128,10 +128,6 @@ void MainWindow::reactOnMediaStateChange()
 
     switch (_gameStatus)
     {
-    case GS_PuzzleCompleted:
-        _testpointsController->sendPuzzleCompeteSignalToOutGpios();
-        break;
-
     case GS_PuzzleTimeIsUp:
         _testpointsController->sendPuzzleIncompeteSignalToOutGpios();
         break;
@@ -158,6 +154,8 @@ void MainWindow::setInitialAppState()
 
     connect(_testpointsController, SIGNAL(laserPassed()), this, SLOT(reactIfLaserPassed()), Qt::UniqueConnection);
     connect(_testpointsController, SIGNAL(laserFailed()), this, SLOT(reactIfLaserFailed()), Qt::UniqueConnection);
+
+    disconnect(_soundPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(reactOnMediaStateChange()));
 
     _testpointsController->resetOutGpiosStatus();
 
@@ -228,8 +226,6 @@ void MainWindow::reactOnTouchIfLaserPassed()
     if (_stackedWidget->currentWidget() != _gameFrame)
         _stackedWidget->setCurrentWidget(_gameFrame);
 
-    setupPuzzle();
-
     _gameStatus = GS_TouchAndLaserPassed;
 
     _puzzleTimer.stop();
@@ -248,8 +244,7 @@ void MainWindow::reactOnTouchIfLaserPassed()
 
     setUiLocked(false);
 
-    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
-    updateTimeDisplay();
+    runPuzzleGame();
 }
 
 void MainWindow::reactOnTouchIfLaserFailed()
@@ -262,8 +257,6 @@ void MainWindow::reactOnTouchIfLaserFailed()
 
     if (_stackedWidget->currentWidget() != _gameFrame)
         _stackedWidget->setCurrentWidget(_gameFrame);
-
-    setupPuzzle();
 
     _gameStatus = GS_TouchAndLaserFailed;
 
@@ -282,8 +275,7 @@ void MainWindow::reactOnTouchIfLaserFailed()
 
     setUiLocked(false);
 
-    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
-    updateTimeDisplay();
+    runPuzzleGame();
 }
 
 void MainWindow::reactWhenPuzzleIsCompleted()
@@ -307,6 +299,8 @@ void MainWindow::reactWhenPuzzleIsCompleted()
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
 
+    _testpointsController->sendPuzzleCompeteSignalToOutGpios();
+
     QTimer::singleShot(_settingsContainer.gameResetPeriod, this, SLOT(setInitialAppState()));
 }
 
@@ -328,6 +322,8 @@ void MainWindow::notifyGameOver()
     playlist->setPlaybackMode(QMediaPlaylist::Sequential);
     playlist->setCurrentIndex(0);
 
+    connect(_soundPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(reactOnMediaStateChange()), Qt::UniqueConnection);
+
     _soundPlayer->setPlaylist(playlist);
     _soundPlayer->play();
 
@@ -346,8 +342,6 @@ void MainWindow::initSoundPlayer()
 {
     _soundPlayer = new QMediaPlayer(this);
     _soundPlayer->setVolume(80);
-
-    connect(_soundPlayer, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(reactOnMediaStateChange()));
 }
 
 void MainWindow::initTestpointsController()
@@ -374,6 +368,14 @@ void MainWindow::setupPuzzle()
 
     _model->addPieces(_puzzleImage);
     _puzzleWidget->clear();
+}
+
+void MainWindow::runPuzzleGame()
+{
+    setupPuzzle();
+
+    _puzzleTimer.start(_settingsContainer.gameTimerPeriod);
+    updateTimeDisplay();
 }
 
 bool MainWindow::event(QEvent *event)
@@ -445,8 +447,6 @@ void MainWindow::setupWidgets()
 
 void MainWindow::setupGameFrames()
 {
-    //TODO: Update this if required
-
     QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
     QHBoxLayout *remaininTimeLayout = new QHBoxLayout;
@@ -479,8 +479,6 @@ void MainWindow::setupGameFrames()
 
 void MainWindow::setupTimeWidget()
 {
-    //TODO: Update this if required
-
     _remainingTimeWidget = new QLabel;
 
     QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
@@ -494,8 +492,6 @@ void MainWindow::setupTimeWidget()
 
 void MainWindow::setupPuzzleWidget()
 {
-    //TODO: Update this if required
-
     const double margins = 10;
     QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
@@ -506,7 +502,6 @@ void MainWindow::setupPuzzleWidget()
                                      _settingsContainer.columnCount,
                                      QSize(imageWidth, imageHeight));
 
-    //TODO: Pass image path to constructor or some method of PuzzleWidget class
     QString backgroundImageName = "puzzle_background.jpg";
     QString backgroundImagePath = imagesDirPath + backgroundImageName;
     _puzzleWidget->setBackgroundImage(backgroundImagePath);
@@ -517,8 +512,6 @@ void MainWindow::setupPuzzleWidget()
 
 void MainWindow::setupPuzzleSource()
 {
-    //TODO: Update this if required
-
     QSizeF availableScreenSize = qApp->primaryScreen()->availableSize();
 
     double gridWidth = 0.2 * availableScreenSize.width();

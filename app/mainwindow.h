@@ -45,7 +45,7 @@ public:
 
 public slots:
     void openImage(const QString &path = QString());
-    void setupPuzzle();
+
 
 
 protected:
@@ -80,6 +80,9 @@ private:
     void loadSettingsFromFile();
 
     void setUiLocked(bool locked);
+
+    void setupPuzzle();
+    void runPuzzleGame();
 
 private:
     static QString settingsFilePath;
