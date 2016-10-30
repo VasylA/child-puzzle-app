@@ -264,7 +264,6 @@ void MainWindow::reactOnTouchIfLaserFailed()
         _stackedWidget->setCurrentWidget(_gameFrame);
 
     setupPuzzle();
-    blinkTimeDisplay();
 
     _gameStatus = GS_TouchAndLaserFailed;
 
