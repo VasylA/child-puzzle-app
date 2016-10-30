@@ -10,10 +10,10 @@ TestpointsController::TestpointsController(QObject *parent)
 
 TestpointsController::~TestpointsController()
 {
-//    _gpio4.unexport_gpio();
-//    _gpio5.unexport_gpio();
-//    _gpio6.unexport_gpio();
-//    _gpio17.unexport_gpio();
+    _gpio4.unexport_gpio();
+    _gpio5.unexport_gpio();
+    _gpio6.unexport_gpio();
+    _gpio17.unexport_gpio();
 }
 
 void TestpointsController::resetOutGpiosStatus()
