@@ -72,13 +72,13 @@ void TestpointsController::checkInGpioStatus()
         return;
     }
 
-    if ( (gpio5Value == "0") && (gpio5Value == "0"))
+    if ( (gpio5Value == "0") && (gpio6Value == "0"))
         emit initialAppStateRequested();
 
-    if ( (gpio5Value == "1") && (gpio5Value == "0"))
+    if ( (gpio5Value == "1") && (gpio6Value == "0"))
         emit laserPassed();
 
-    if ( (gpio5Value == "1") && (gpio5Value == "1"))
+    if ( (gpio5Value == "1") && (gpio6Value == "1"))
         emit laserFailed();
 
     QTimer::singleShot(STATUS_CHECK_PERIOD, this, SLOT(checkInGpioStatus()));
